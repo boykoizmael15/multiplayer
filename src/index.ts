@@ -193,7 +193,7 @@ function resolveSpellingGame(room,round){const g=room.spellingGame;if(!g||g.roun
 function startSpellingGame(room){const ids=Array.from(room.players.keys());if(ids.length<2){notifyRoom(room.code,"Spelling Bee needs at least 2 players.");return}if(room.spellingGame&&room.spellingGame.timer)clearTimeout(room.spellingGame.timer);const item=SPELLING_WORDS[Math.floor(Math.random()*SPELLING_WORDS.length)],old=room.spellingGame,g={phase:"active",round:(old&&old.round||0)+1,word:item.word,sentence:item.sentence,roster:new Set(ids),names:new Map(Array.from(room.players.entries()).map(([id,p])=>[id,p.name])),responses:new Map(),scores:old&&old.scores?old.scores:new Map(),deadline:Date.now()+65000,timer:null};room.spellingGame=g;for(const id of ids)sendSpellingPrivate(room,id);g.timer=setTimeout(()=>resolveSpellingGame(room,g.round),65000);publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee! Listen to the voice narrator and spell the word.")}
 
 let serverRef;
-export default {
+Bun.serve({
   port: Number(Bun.env.PORT || 8080),
   fetch(req, server) {
     serverRef = server;
@@ -428,4 +428,4 @@ export default {
       }
     }
   }
-};
+});
