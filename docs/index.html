@@ -501,6 +501,51 @@ function resolveSpellingGame(room,round){const g=room.spellingGame;if(!g||g.roun
 function startSpellingGame(room,difficulty="medium"){const ids=Array.from(room.players.keys());if(ids.length<2){notifyRoom(room.code,"Spelling Bee needs at least 2 players.");return}if(room.spellingGame&&room.spellingGame.timer)clearTimeout(room.spellingGame.timer);const pool=SPELLING_WORDS.filter(w=>w.difficulty===difficulty||(!w.difficulty&&difficulty==="medium"));const item=pickRoomDeck(room,"spelling-"+difficulty,pool.length?pool:SPELLING_WORDS),old=room.spellingGame,g={phase:"active",difficulty,round:(old&&old.round||0)+1,word:item.word,sentence:item.sentence,roster:new Set(ids),names:new Map(Array.from(room.players.entries()).map(([id,p])=>[id,p.name])),responses:new Map(),scores:old&&old.scores?old.scores:new Map(),deadline:Date.now()+65000,timer:null};room.spellingGame=g;for(const id of ids)sendSpellingPrivate(room,id);g.timer=setTimeout(()=>resolveSpellingGame(room,g.round),65000);publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee! Listen to the voice narrator and spell the word.")}
 
 
+function getTttGame(room){
+ if(!room.tttGame)room.tttGame={board:Array(9).fill(""),moves:0,turn:"X",seats:{X:null,O:null},phase:"waiting",winner:null};
+ return room.tttGame;
+}
+function tttPublic(room){
+ const g=getTttGame(room),seats=g.seats;
+ return {board:g.board.slice(),moves:g.moves,turn:g.turn,phase:g.phase,winner:g.winner,
+  seats:{X:seats.X?{id:seats.X,name:room.players.get(seats.X)?.name||"Left player"}:null,
+         O:seats.O?{id:seats.O,name:room.players.get(seats.O)?.name||"Left player"}:null},
+  currentPlayerId:g.phase==="playing"?seats[g.turn]:null,
+  players:Array.from(room.players.values()).map(p=>({id:p.id,name:p.name}))};
+}
+function publishTtt(room){serverRef.publish(room.code,JSON.stringify({type:"tttState",state:tttPublic(room)}))}
+function syncTttPlayer(room,id){
+ const g=getTttGame(room);
+ if(g.seats.X!==id&&g.seats.O!==id){
+  if(!g.seats.X)g.seats.X=id;
+  else if(!g.seats.O)g.seats.O=id;
+ }
+ if(g.seats.X&&g.seats.O&&g.phase==="waiting"){g.phase="playing";g.turn="X";g.moves=0;g.board=Array(9).fill("");}
+ sendTo(room,id,{type:"tttState",state:tttPublic(room)});
+ publishTtt(room);
+}
+function resetTtt(room){
+ const g=getTttGame(room);
+ g.board=Array(9).fill("");g.moves=0;g.turn="X";g.winner=null;
+ g.phase=g.seats.X&&g.seats.O&&room.players.has(g.seats.X)&&room.players.has(g.seats.O)?"playing":"waiting";
+ publishTtt(room);
+}
+function handleTttAction(room,player,msg){
+ const g=getTttGame(room),action=String(msg.action||"");
+ if(action==="sync"){syncTttPlayer(room,player.id);return}
+ if(action==="reset"){resetTtt(room);return}
+ if(action!=="move"||g.phase!=="playing")return;
+ const mark=g.seats.X===player.id?"X":g.seats.O===player.id?"O":null;
+ const cell=Number(msg.cell);
+ if(!mark||mark!==g.turn||!Number.isInteger(cell)||cell<0||cell>8||g.board[cell])return;
+ g.board[cell]=mark;g.moves++;
+ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ if(wins.some(line=>line.every(i=>g.board[i]===mark))){g.phase="ended";g.winner=mark}
+ else if(g.moves===9){g.phase="ended";g.winner="draw"}
+ else g.turn=mark==="X"?"O":"X";
+ publishTtt(room);
+}
+
 const serverRef={publish(code,payload){const room=rooms.get(code);if(!room)return;for(const ws of room.connections.values()){if(ws.readyState===1){try{ws.send(payload)}catch{}}}}};
 const websocket={
     open(ws) {
@@ -535,6 +580,7 @@ const websocket={
         serverRef.publish(ws.data.room, JSON.stringify({ type: "chat", name: player.name, color: player.color, text }));
         return;
       }
+      if (msg.type === "tttAction") { handleTttAction(room,player,msg); return; }
       if (msg.type === "gameEvent") {
         const event = msg.event || {};
         const payload = JSON.stringify({ type: "gameEvent", gameId: String(msg.gameId || "").slice(0, 24), event, player });
@@ -907,6 +953,7 @@ function handleMessage(m){
  if(m.type==="mindPrivate"){S.mindSubmitted=!!m.submitted;if(activeGame==="mindmeld")renderMindMeld();return}
  if(m.type==="objectState"){if(S.objectState?.round!==m.state?.round||S.objectState?.phase!=="voting"&&m.state?.phase==="voting")S.myVote={};S.objectState=m.state;if(activeGame==="objectimposter")renderObjectImposter();return}
  if(m.type==="objectPrivate"){S.objectPrivate=m;if(activeGame==="objectimposter")renderObjectImposter();return}
+ if(m.type==="tttState"){applyTttState(m.state);return}
  if(m.type==="spellingState"){S.spellingState=m.state;if(m.state?.difficulty)S.difficulty=m.state.difficulty;if(activeGame==="spellingbee")renderSpellingBee();return}
  if(m.type==="spellingPrivate"){S.spellingPrivate=m;S.spellingSubmitted=!!m.submitted;if(activeGame==="spellingbee"){renderSpellingBee();if(m.round!==S.narratedRound){S.narratedRound=m.round;setTimeout(speakBeeWord,450)}}return}
 
@@ -958,7 +1005,7 @@ function openGame(id){
  meteor:"Move left and right to dodge falling meteors. Survive as long as you can.",
  snake:"Use the arrow keys to guide your snake and collect glowing dots. Don't hit yourself!",
  pong:"Move your paddle with W/S or ↑/↓. Players in the room control opposite paddles.",
- ttt:"Players take turns. First to line up three marks wins. Moves appear for everyone in the room.",
+ ttt:"Two players take X and O. The room shares one board, validates each turn, and everyone else can watch.",
  connect:"Take turns dropping discs. Connect four horizontally, vertically or diagonally.",
  memory:"Take turns finding matching pairs. The whole room shares one deck.",
  reaction:"Press start, wait for the screen to turn green, then click fast. Don't jump the gun!",
@@ -1002,7 +1049,7 @@ function handleGameEvent(gameId,event,player){
  if(gameId==="snake"&&event.kind==="snake"){S.others=S.others||{};S.others[player.id]={body:event.body,color:player.color,name:player.name}}
  if(gameId==="pong"&&event.kind==="paddle"){S.paddles=S.paddles||{};S.paddles[player.id]=event.y}
  if(gameId==="pong"&&event.kind==="ball"){S.ball=event.ball;S.pongScore=event.score}
- if(gameId==="ttt"&&event.kind==="move")applyTtt(event.cell,event.mark,false); if(gameId==="ttt"&&event.kind==="tttReset"){S.board=Array(9).fill("");S.moves=0;S.done=false;renderTtt()}
+
  if(gameId==="connect"&&event.kind==="drop")applyConnect(event.col,event.mark,false); if(gameId==="connect"&&event.kind==="connectReset"){S.board=Array.from({length:6},()=>Array(7).fill(""));S.moves=0;S.done=false;renderConnect()}
  if(gameId==="memory"&&event.kind==="flip")applyMemory(event.index,player.name,false); if(gameId==="memory"&&event.kind==="memoryReset"){S.deck=event.deck;S.open=[];S.matched=[];S.turns=0;renderMemory()}
  if(gameId==="reaction"&&event.kind==="score")setScore(player.id,event.score);
@@ -1114,13 +1161,30 @@ function drawCanvasGame(id){
  }
 }
 function setupTtt(){
- S.board=Array(9).fill("");S.moves=0;S.done=false;
- const ui=$("#game-ui");ui.innerHTML='<div class="prompt" id="ttt-status">X starts — make your move!</div><div class="board ttt" id="ttt-board"></div><div class="muted">The same board is shown to everyone in this room.</div><div class="controls"><button class="ctrl" id="ttt-reset">New round</button></div>';
- renderTtt();$("#ttt-board").onclick=e=>{const b=e.target.closest("[data-cell]");if(!b||S.done||S.board[Number(b.dataset.cell)])return;const mark=S.moves%2===0?"X":"O";applyTtt(Number(b.dataset.cell),mark,true)};$("#ttt-reset").onclick=()=>{S.board=Array(9).fill("");S.moves=0;S.done=false;renderTtt();broadcastEvent({kind:"tttReset"})};
+ S.tttState=null;
+ const ui=$("#game-ui");
+ ui.innerHTML='<div class="prompt" id="ttt-status">Connecting to the shared board…</div><div class="board ttt" id="ttt-board"></div><div class="muted" id="ttt-role">Two players take X and O. Everyone else can watch.</div><div class="controls"><button class="ctrl" id="ttt-reset">New round</button></div>';
+ renderTtt();
+ $("#ttt-board").onclick=e=>{const b=e.target.closest("[data-cell]");if(!b||!S.tttState)return;send({type:"tttAction",action:"move",cell:Number(b.dataset.cell)})};
+ $("#ttt-reset").onclick=()=>send({type:"tttAction",action:"reset"});
+ send({type:"tttAction",action:"sync"});
 }
-function applyTtt(cell,mark,sendIt){if(S.board[cell]||S.done)return;S.board[cell]=mark;S.moves++;const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];const win=wins.some(line=>line.every(i=>S.board[i]===mark));S.done=win||S.moves===9;renderTtt();if(sendIt)broadcastEvent({kind:"move",cell,mark});if(win)toast(mark+" wins!");else if(S.done)toast("It's a draw!")}
-function renderTtt(){const b=$("#ttt-board");if(!b)return;b.innerHTML=S.board.map((v,i)=>'<button data-cell="'+i+'" style="color:'+(v==="X"?"#78eaff":"#ff83c7")+'">'+v+'</button>').join("");const st=$("#ttt-status");if(st)st.textContent=S.done?"Round over — start a new round!":(S.moves%2===0?"X to move":"O to move")}
-function setupConnect(){
+function applyTttState(state){S.tttState=state;renderTtt()}
+function renderTtt(){
+ const state=S.tttState||{board:Array(9).fill(""),phase:"waiting",seats:{X:null,O:null},players:[]};
+ const board=$("#ttt-board");if(board){
+  const myMark=state.seats?.X?.id===serverPlayerId?"X":state.seats?.O?.id===serverPlayerId?"O":null;
+  const myTurn=!!myMark&&state.phase==="playing"&&state.turn===myMark;
+  board.innerHTML=state.board.map((v,i)=>'<button data-cell="'+i+'" '+(!myTurn||v||state.phase!=="playing"?"disabled":"")+' style="color:'+(v==="X"?"#78eaff":"#ff83c7")+'">'+v+'</button>').join("");
+  const role=$("#ttt-role");if(role)role.textContent=myMark?"You are "+myMark+" · "+(myTurn?"Your turn":state.phase==="ended"?"Round finished":"Waiting for "+state.turn):"Spectating · "+(state.seats?.X?.name||"Waiting for X")+" vs "+(state.seats?.O?.name||"Waiting for O");
+ }
+ const st=$("#ttt-status");if(st){
+  const x=state.seats?.X?.name||"Waiting for player",o=state.seats?.O?.name||"Waiting for player";
+  st.textContent=state.phase==="waiting"?"Waiting for 2 players · "+x+" vs "+o:
+    state.phase==="ended"?(state.winner==="draw"?"It's a draw!":state.winner+" wins! Start a new round."):
+    (state.turn+" to move · "+(state.turn==="X"?x:o));
+ }
+}function setupConnect(){
  S.board=Array.from({length:6},()=>Array(7).fill(""));S.moves=0;S.done=false;const ui=$("#game-ui");ui.innerHTML='<div class="prompt" id="connect-status">🔴 Red starts</div><div class="board connect" id="connect-board"></div><div class="muted">Click any slot in a column to drop your disc.</div><div class="controls"><button class="ctrl" id="connect-reset">New round</button></div>';renderConnect();
  $("#connect-board").onclick=e=>{const b=e.target.closest("[data-col]");if(!b||S.done)return;const col=Number(b.dataset.col);applyConnect(col,S.moves%2===0?"R":"Y",true)};
  $("#connect-reset").onclick=()=>{S.board=Array.from({length:6},()=>Array(7).fill(""));S.moves=0;S.done=false;renderConnect();broadcastEvent({kind:"connectReset"})};
