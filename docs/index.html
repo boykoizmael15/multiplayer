@@ -738,7 +738,7 @@ function addChat(name,text,color){const line=document.createElement("div");line.
 $("#chat-form").addEventListener("submit",e=>{e.preventDefault();const v=$("#chat-input").value.trim();if(!v)return;send({type:"chat",text:v});$("#chat-input").value=""});
 $("#join-room").onclick=()=>{const code=roomInput.value.trim();if(!code){toast("Enter a room code first");return}connectRoom(code)};
 $("#create-room").onclick=()=>{const code=Math.random().toString(36).slice(2,7).toUpperCase();connectRoom(code);history.replaceState(null,"","?room="+code);toast("Private room created: "+code)};
-$("#copy-room").onclick=async()=>{const url=location.origin+(room==="PUBLIC"?"/":"?room="+room);try{await navigator.clipboard.writeText(url);toast("Invite link copied!")}catch{toast("Room code: "+room)}};
+$("#copy-room").onclick=async()=>{const invite=new URL(location.href);invite.searchParams.delete("room");if(room!=="PUBLIC")invite.searchParams.set("room",room);const url=invite.toString();try{await navigator.clipboard.writeText(url);toast("Invite link copied!")}catch{toast("Room code: "+room)}};
 const params=new URLSearchParams(location.search);connectRoom(params.get("room")||"PUBLIC");
 function cleanupTimers(){if(raf)cancelAnimationFrame(raf);if(gameInterval)clearInterval(gameInterval);if(gameTimeout)clearTimeout(gameTimeout);if(S&&typeof S.threeCleanup==="function"){try{S.threeCleanup()}catch{}}if(window.speechSynthesis)window.speechSynthesis.cancel();raf=0;gameInterval=null;gameTimeout=null}
 function closeGame(){cleanupTimers();activeGame=null;overlay.classList.remove("show")}
