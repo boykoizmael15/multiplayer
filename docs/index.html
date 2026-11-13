@@ -357,9 +357,9 @@ const WORD_BANK_EXTRA=[
 ];
 WORD_BANK.push(...WORD_BANK_EXTRA);
 const MIND_PROMPT_BANK={
- easy:["Name a snack you would share with a friend.","What animal would make the funniest teacher?","Name something you would bring to a sleepover.","What color would you paint a treehouse?","What is the best ice-cream flavor?","Name something found in a playground.","What would you name a friendly dragon?","What is the first thing you do on a day off?","Name a food that is best eaten with your hands.","What is a fun rainy-day activity?","Which animal would win a dance contest?","What belongs in the perfect picnic?","Name a cartoon character you would invite to a party.","What is the best thing to find in a treasure chest?","What would you put in a time capsule?","Name something that makes people laugh.","What is the best topping for a cupcake?","What would you build with unlimited LEGO?","Name a place to explore with friends.","What sound would a happy robot make?"],
- medium:["Name a food almost everyone likes.","What is the first thing you pack for a beach day?","Name an animal you would not want in your bedroom.","What is the best late-night snack?","Name a color that feels like summer.","What is something people always lose?","Name a thing you would take to a deserted island.","What is the first word you think of when you hear SPACE?","Name a popular pizza topping.","What is the best superpower for everyday life?","Name something that makes a room instantly better.","What is the most underrated breakfast food?","Name an object you would use in a pillow fort.","What is the first thing you would do with a million dollars?","Name a movie genre for a group movie night.","What is something everyone should learn to do?","Name a smell that reminds you of home.","What would be the worst thing to forget on a trip?","Name an invention that should exist.","What is the most useful thing in a backpack?","Which fictional place would you visit?","Name something that instantly improves a bad day.","What is an unusual but good sandwich filling?","What would you call a tiny alien pet?","Name a game that never gets boring."],
- hard:["Which small decision can completely change a day?","What makes someone genuinely trustworthy?","Name a rule you would invent for a perfect society.","What is a harmless hill you are willing to die on?","Which skill is secretly more useful than people think?","What is the best way to resolve a disagreement?","Name something people pretend to understand.","What makes a team work well under pressure?","Which everyday problem deserves a clever invention?","What is a surprisingly difficult thing to explain?","Name a quality that makes a leader worth following.","What is one assumption people should question?","Which would you choose: certainty or possibility? Why?","What makes a conversation unforgettable?","Name a challenge that is easier with a team.","What is a fair way to divide an impossible task?","What should every school teach that it usually does not?","Which matters more in a group: honesty or kindness?","What makes an idea worth taking a risk for?","Name something that looks simple but takes real skill.","What is a good question that people rarely ask?","What makes a mystery fun to solve?","Which invention changed daily life the most?","What is the difference between confidence and courage?","What is one thing a group should decide together?"]
+ easy:["What is the name of the planet we live on?","How many days are in a week?","What color do you get by mixing red and yellow paint?","What animal says meow?","What do bees make?","Which season comes after spring?","What do you use to tell time on your wrist?","What is frozen water called?","How many wheels does a standard bicycle have?","What fruit is commonly used to make raisins?","Which shape has three sides?","What do you call a baby dog?","Which star is closest to Earth?","What do plants need from the sun?","What is the opposite of hot?","Which ocean is between Africa and Australia?","What do you use to write on a chalkboard?","What is 5 plus 5?","Which month comes after June?","What do you call water falling from clouds?"],
+ medium:["Which gas do humans need to breathe to survive?","What is the largest planet in our solar system?","At what temperature does water freeze in Celsius?","Which organ pumps blood around the body?","What is the process plants use to make food using sunlight?","How many sides does a hexagon have?","Which metal is attracted to a magnet?","What is the chemical symbol for water?","Which planet is known as the Red Planet?","What is the capital city of France?","How many minutes are in one hour?","Which force pulls objects toward Earth?","What is the largest mammal on Earth?","Which part of a plant absorbs most water from soil?","What is 12 multiplied by 8?","Which instrument measures temperature?","What is the name for animals that eat only plants?","Which continent is the Sahara Desert in?","What is the boiling point of water at sea level in Celsius?","Which blood cells help fight infection?"],
+ hard:["What is the chemical symbol for gold?","Which planet has the most prominent ring system?","What is the smallest prime number?","Which part of the cell contains most of its genetic material?","What is the SI unit of force?","What is the name of the process where a gas becomes a liquid?","Which layer of Earth lies between the crust and the core?","What is the value of pi rounded to two decimal places?","Which scientist formulated the three laws of motion?","What is the study of earthquakes called?","Which element has the atomic number 6?","What is the longest bone in the human body?","What is the term for a word with the opposite meaning of another word?","Which part of the eye controls the amount of light entering?","What is the square root of 144?","Which ocean is the largest on Earth?","What is the main gas in Earth's atmosphere?","Which process splits a cell into two daughter cells?","What is the chemical symbol for sodium?","Which scale is commonly used to measure earthquake magnitude?"]
 };
 function pickRoomDeck(room,key,items){room._decks=room._decks||{};let bag=room._decks[key];if(!bag||!bag.length){bag=items.slice().sort(()=>Math.random()-.5);room._decks[key]=bag}return bag.pop()}
 
@@ -1083,7 +1083,7 @@ function openGame(id){
  mostlikely:"Vote for the friend who best matches each hilarious prompt. See the room results.",
  wouldyou:"Vote between two chaotic choices and compare the whole room.",
  wordguess:"A shared secret-word challenge. Everyone sees the same clue and races to type the answer.",
- mindmeld:"Everyone secretly answers one prompt. Reveal together and score points when your minds match.",
+ mindmeld:"Answer clear, focused questions at the same time. Match your friends’ answers to score points.",
  social3d:"Explore a detailed 3D island with your friends. Walk, jump, wave, dance and collect glowing tokens.",objectimposter:"Crewmates all get the same secret object. Describe it without saying its name while one imposter tries to identify it.",spellingbee:"A voice narrator speaks each word and sentence. Type the word you hear."
  }[id];
  if(id==="imposter"){setupImposter();return}
@@ -1359,9 +1359,15 @@ function renderImposterHud(){
  const report=$("#imp-report");if(report)report.onclick=()=>imposterSend("report");
 }
 const MOST_LIKELY_PROMPTS={
- easy:["Who would bring snacks for everyone?","Who would laugh at their own joke first?","Who would be the best team captain?","Who would remember everyone's birthday?","Who would adopt the cutest pet?","Who would make the best pizza?","Who would sing loudly in the car?","Who would win a board-game night?","Who would build the best blanket fort?","Who would cheer the loudest?","Who would befriend a new student first?","Who would plan the most fun picnic?","Who would find a lost puppy?","Who would make a boring day fun?","Who would be the best game-show host?","Who would bring a camera on every trip?","Who would start a dance party?","Who would make the funniest cartoon?","Who would be the best camp counselor?","Who would discover a new hobby?"],
- medium:["Who would accidentally become famous for something silly?","Who would survive longest on a deserted island?","Who would laugh at the worst possible moment?","Who would accidentally start a weird trend?","Who would befriend an alien first?","Who would get lost using GPS?","Who would win a reality show?","Who would adopt twelve pets?","Who would become a secret superhero?","Who would eat dessert before dinner?","Who would send a screenshot to the wrong group chat?","Who would survive a zombie movie?","Who would start a business selling something ridiculous?","Who would become a detective over a missing snack?","Who would make friends with a robot?","Who would accidentally join the wrong team?","Who would become the mayor of a tiny island?","Who would be the first to try a strange food?","Who would turn a small problem into an adventure?","Who would win a spontaneous talent show?"],
- hard:["Who would lead a completely improvised road trip?","Who would negotiate their way out of an absurd situation?","Who would become the mastermind of a harmless prank?","Who would make the boldest decision in a team challenge?","Who would convince everyone to try an unusual hobby?","Who would stay calm when the plan suddenly changes?","Who would invent the most convincing fake product pitch?","Who would turn a debate into a comedy show?","Who would make the best undercover investigator in a game?","Who would take the biggest creative risk?","Who would build an entire plan from three random objects?","Who would give the most persuasive two-minute speech?","Who would spot a pattern no one else noticed?","Who would create the most unexpected winning strategy?","Who would volunteer to solve the mystery first?","Who would be the strongest negotiator in a team game?","Who would turn a failure into a surprisingly good idea?","Who would improvise a brilliant solution under pressure?","Who would design the most complicated treasure hunt?","Who would win a friendly logic showdown?"]
+ easy:[
+ "Who is most likely to arrive early to a planned meetup?","Who is most likely to remember a friend's birthday?","Who is most likely to organize a group outing?","Who is most likely to bring snacks to share?","Who is most likely to help someone carry a heavy bag?","Who is most likely to keep a group chat active?","Who is most likely to take photos during a trip?","Who is most likely to volunteer first?","Who is most likely to remember where the group parked?","Who is most likely to make a detailed shopping list?","Who is most likely to suggest playing a board game?","Who is most likely to notice that someone feels left out?","Who is most likely to bring an umbrella when rain is forecast?","Who is most likely to return a lost item?","Who is most likely to plan a surprise party?","Who is most likely to explain the rules of a new game?","Who is most likely to keep their desk organized?","Who is most likely to try a new food first?","Who is most likely to remember everyone's drink order?","Who is most likely to offer help without being asked?"
+ ],
+ medium:[
+ "Who is most likely to check the route before a road trip?","Who is most likely to compare prices before buying something?","Who is most likely to stay calm when plans change?","Who is most likely to solve a practical problem with things nearby?","Who is most likely to remember instructions after hearing them once?","Who is most likely to notice a mistake in a group plan?","Who is most likely to mediate a disagreement fairly?","Who is most likely to finish a group task before the deadline?","Who is most likely to ask a useful follow-up question?","Who is most likely to learn the rules before starting a competition?","Who is most likely to keep track of shared expenses?","Who is most likely to find a lost item by retracing steps?","Who is most likely to check facts before sharing a story?","Who is most likely to divide a big task into smaller steps?","Who is most likely to remember a promise they made?","Who is most likely to spot when a schedule is unrealistic?","Who is most likely to give clear directions?","Who is most likely to notice when someone needs a break?","Who is most likely to make a backup plan?","Who is most likely to admit a mistake and correct it?"
+ ],
+ hard:[
+ "Who is most likely to lead a team through a tight deadline?","Who is most likely to find the simplest solution to a complicated problem?","Who is most likely to separate facts from assumptions in an argument?","Who is most likely to notice that a source is unreliable?","Who is most likely to make a fair plan when resources are limited?","Who is most likely to explain a difficult idea in simple language?","Who is most likely to identify the main cause of a problem?","Who is most likely to ask the question everyone else overlooked?","Who is most likely to change their mind when new evidence appears?","Who is most likely to create a realistic step-by-step strategy?","Who is most likely to spot a risk before a project begins?","Who is most likely to resolve a disagreement by finding common ground?","Who is most likely to keep a team focused on its goal?","Who is most likely to recognize when a plan needs to change?","Who is most likely to check the details before making a decision?","Who is most likely to explain both sides of an issue fairly?","Who is most likely to allocate time well across several tasks?","Who is most likely to find a practical compromise?","Who is most likely to stay objective under pressure?","Who is most likely to turn feedback into a clear improvement plan?"
+ ]
 };
 function setupMostLikely(){S.difficulty="medium";const seed=Array.from(room).reduce((n,c)=>((n*31)+c.charCodeAt(0))>>>0,7);S.prompt=MOST_LIKELY_PROMPTS.medium[seed%MOST_LIKELY_PROMPTS.medium.length];S.votes={};renderMostLikely()}
 function renderMostLikely(){
@@ -1426,68 +1432,68 @@ const SOCIAL_CHALLENGES={
  hottake:{
   title:"🔥 Hot Take Showdown",
   prompts:{
-   easy:["Pineapple belongs on pizza.","Breakfast is the best meal of the day.","Dogs are better at making friends than cats.","Board games are more fun than video games.","Rainy days are perfect for staying inside."],
-   medium:["The best seat in a movie theater is the very front row.","A hot dog is technically a sandwich.","Fries are better than pizza as a side dish.","Group projects are better than solo projects.","The sequel is usually better than the original."],
-   hard:["Being early is more stressful than being late.","The best ideas happen after a plan goes wrong.","A little competition makes friendships stronger.","A good question is more powerful than a good answer.","The person who changes their mind wins the debate."]
-  },choices:["Agree 🔥","Disagree 🧊","It depends 🤔"]
+   easy:["Which is the better after-school snack?","Which is more fun on a rainy day?","Which is the better family pet for most homes?","Which is easier to share with a group?","Which is the better weekend activity?"],
+   medium:["Which is the more practical way to travel across a city?","Which is the better way to learn a new skill?","Which makes a group project run more smoothly?","Which is more useful when planning a trip?","Which is the better way to remember important tasks?"],
+   hard:["Which should a team prioritize when checking important work?","Which is the better first step when a plan fails?","Which is more important for a fair group decision?","Which is the best way to handle a disagreement?","Which is more reliable when making a factual decision?"]
+  },
+  answers:{
+   easy:[["Fruit 🍎","Chips 🍟"],["Board games 🎲","Watching a movie 🎬"],["Cat 🐈","Dog 🐕"],["Pizza 🍕","Sandwiches 🥪"],["Going outside ⚽","Staying in 🎮"]],
+   medium:[["Public transport 🚌","Driving 🚗"],["Practicing regularly 🏃","Watching tutorials 📺"],["Clear roles ✅","Everyone doing everything 🔄"],["Checking the route 🗺️","Deciding as you go 🧭"],["A calendar 📅","A written checklist 📝"]],
+   hard:[["Accuracy 🎯","Speed ⚡"],["Identify what went wrong 🔍","Repeat the same plan 🔁"],["Consistent rules ⚖️","Clear reasons for exceptions 📋"],["Listen to each side 👂","Agree on a specific next step 🤝"],["Verified evidence 📚","A confident guess 💭"]]
+  }
  },
  secretorder:{
   title:"🏆 Secret Ranking",
   prompts:{
-   easy:["Pick your #1 snack:","Pick your #1 pet:","Pick your #1 weekend activity:","Pick your #1 ice-cream flavor:","Pick your #1 game-night treat:"],
-   medium:["Pick the most useful teammate quality:","Pick the best way to spend a free afternoon:","Pick the fictional place you would visit first:","Pick the invention you would keep:","Pick the best party activity:"],
-   hard:["Pick the most important skill in a mystery team:","Pick the quality you would want in a leader:","Pick the discovery with the biggest impact:","Pick the best way to handle a difficult decision:","Pick the change that would most improve a group:"]
-  },choices:["Pizza 🍕","Tacos 🌮","Sushi 🍣","Burgers 🍔","Kindness 💛","Creativity 🎨","Courage 🦁","Patience 🌱","Treehouse 🌳","Space station 🚀","Underwater city 🌊","Castle 🏰","Logic 🧠","Observation 🔎","Teamwork 🤝","Curiosity ✨"]
+   easy:["Choose the snack you would pick first.","Choose the pet you would most like to care for.","Choose the activity you would pick for a free afternoon.","Choose the ice-cream flavor you would pick first.","Choose the item most useful for a picnic."],
+   medium:["Choose the most important quality in a teammate.","Choose the most useful item to pack for a day trip.","Choose the most useful everyday invention.","Choose the best way to keep a group task organized.","Choose the most useful skill to learn first."],
+   hard:["Choose the most important step when solving a problem.","Choose the most useful skill for a project leader.","Choose the strongest basis for a factual conclusion.","Choose the fairest way to assign group tasks.","Choose the best first action when a deadline is at risk."]
+  },
+  answers:{
+   easy:[["Apple 🍎","Chips 🍟","Popcorn 🍿","Yogurt 🥣"],["Dog 🐕","Cat 🐈","Rabbit 🐇","Fish 🐠"],["Playing a sport ⚽","Reading 📚","Drawing 🎨","Cycling 🚲"],["Vanilla 🍦","Chocolate 🍫","Strawberry 🍓","Mint 🌿"],["Water 💧","Sunscreen ☀️","Blanket 🧺","Umbrella ☂️"]],
+   medium:[["Reliability ✅","Communication 💬","Creativity 🎨","Patience 🌱"],["Water bottle 💧","Phone charger 🔌","Map 🗺️","First-aid kit 🩹"],["Refrigerator ❄️","Washing machine 🧺","Phone 📱","Internet 🌐"],["Shared checklist 📝","Clear task owners 👥","Regular updates 📣","One final review 🔍"],["First aid 🩹","Budgeting 💰","Typing ⌨️","Public speaking 🎤"]],
+   hard:[["Define the problem 🔍","Collect reliable facts 📚","Compare options ⚖️","Review the result ✅"],["Planning 🗓️","Listening 👂","Delegating 👥","Decision-making 🎯"],["Verified evidence 📚","Repeatable testing 🧪","Expert review 👩‍🏫","Personal opinion 💭"],["Match tasks to skills 🧩","Rotate responsibilities 🔄","Ask for volunteers 🙋","Assign randomly 🎲"],["Check the remaining work 📋","Tell the team early 📣","Set priorities 🎯","Ask for extra help 🤝"]]
+  }
  },
  emojicode:{
   title:"🧩 Emoji Decoder",
   prompts:{
-   easy:["🐝 + 🍯 = ?","🌧️ + 🌈 = ?","🐱 + 🐟 = ?","❄️ + ☃️ = ?","🌙 + ⭐ = ?"],
-   medium:["🧠 + 🌪️ = ?","🕰️ + 💰 = ?","🦁 + 👑 = ?","📚 + 🐛 = ?","🚀 + 🪐 = ?"],
-   hard:["🔍 + 🧩 + 🕵️ = ?","🎭 + 🎬 + 🏆 = ?","🧭 + 🌊 + 🗺️ = ?","⚖️ + 🧠 + 💬 = ?","🧪 + ⚡ + 💡 = ?"]
-  },choices:["Honeybee","Rainbow","Cat nap","Snow day","Night sky","Brainstorm","Time is money","King of the jungle","Bookworm","Space explorer","Detective mystery","Award-winning actor","Ocean expedition","Thoughtful debate","Scientific breakthrough"]
+   easy:["Which word matches 🍎?","Which place matches 🏫?","Which animal matches 🐘?","Which weather matches 🌧️?","Which object matches ✂️?"],
+   medium:["Which science term matches 🌱 + ☀️ + 💧?","Which job matches 🩺 + 🏥?","Which transport matches 🚲?","Which natural event matches 🌋?","Which tool matches 🔭?"],
+   hard:["Which process matches 💧 + ☁️ + 🌧️?","Which science field studies living things?","Which term means a testable scientific explanation?","Which tool measures temperature?","Which process changes liquid water into vapor?"]
+  },
+  answers:{
+   easy:[["Apple 🍎","Banana 🍌","Carrot 🥕","Bread 🍞"],["School 🏫","Hospital 🏥","Airport ✈️","Library 📚"],["Elephant 🐘","Giraffe 🦒","Tiger 🐅","Dolphin 🐬"],["Rain 🌧️","Snow ❄️","Wind 💨","Sunshine ☀️"],["Scissors ✂️","Spoon 🥄","Clock 🕒","Key 🔑"]],
+   medium:[["Photosynthesis 🌿","Evaporation 💨","Magnetism 🧲","Gravity 🌎"],["Doctor 🩺","Pilot ✈️","Chef 👨‍🍳","Teacher 📚"],["Bicycle 🚲","Train 🚆","Boat 🚤","Bus 🚌"],["Volcanic eruption 🌋","Earthquake 🌎","Tornado 🌪️","Flood 🌊"],["Telescope 🔭","Microscope 🔬","Compass 🧭","Thermometer 🌡️"]],
+   hard:[["Water cycle 💧","Rock cycle 🪨","Food chain 🥗","Solar system 🪐"],["Biology 🧬","Geology 🪨","Astronomy 🔭","Chemistry ⚗️"],["Hypothesis 🧪","Conclusion ✅","Measurement 📏","Observation 👀"],["Thermometer 🌡️","Barometer 🌬️","Ruler 📏","Compass 🧭"],["Evaporation 💨","Condensation ☁️","Freezing 🧊","Melting 💧"]]
+  }
  },
  commonground:{
   title:"🤝 Common Ground",
   prompts:{
-   easy:["Name something almost everyone enjoys doing with friends.","Name a snack most people would share.","Name one thing that makes a day better.","Name an activity for a rainy afternoon.","Name something people bring on a trip."],
-   medium:["Name a small habit that makes a group work better.","Name one thing people secretly enjoy about school or work.","Name a food that belongs at every celebration.","Name a place where strangers easily start talking.","Name a simple invention that would help everyone."],
-   hard:["Name one value a great team should share.","Name a problem people would gladly solve together.","Name a quality that makes a community stronger.","Name one rule that would make group projects fairer.","Name a change that would make everyday life kinder."]
+   easy:["Name one item most people use every day.","Name one thing you should take on a hot day outdoors.","Name one food that is commonly served for breakfast.","Name one way to travel short distances.","Name one thing you do before crossing a street."],
+   medium:["Name one habit that helps keep a shared room tidy.","Name one reliable way to remember an appointment.","Name one item to include in a basic first-aid kit.","Name one way to make a group task easier to coordinate.","Name one thing to check before starting a road trip."],
+   hard:["Name one reliable source for checking a factual claim.","Name one fair way to resolve a disagreement about shared work.","Name one step to take before spending from a limited budget.","Name one useful way to reduce errors in a team project.","Name one action to take when a deadline is no longer realistic."]
   },choices:[]
  },
  debateduel:{
   title:"⚖️ Debate Duel",
   prompts:{
-   easy:["Which would you rather explore?","Which helper would you choose?","What should a perfect day include?","Which ability would you rather have?","Which breakfast is best?"],
-   medium:["How should a group choose teams?","Which is more valuable in life?","Which is better for solving a mystery?","Which makes a better adventure?","Which discovery would you prefer?"],
-   hard:["What should a team prioritize?","Which is better for solving difficult problems?","What makes a decision fair?","Which helps more with unfamiliar problems?","How should a leader make important decisions?"]
+   easy:["Which would you choose for a school lunch?","Which is the better way to get to a nearby park?","Which is more useful on a rainy day?","Which animal is commonly kept as a household pet?","Which is the better way to keep a note?"],
+   medium:["Which is the more reliable way to check a fact?","Which is a better way to prepare for a spelling test?","Which is the more useful tool for organizing a team?","Which is the safer choice when crossing a busy road?","Which is the better first step when solving a math problem?"],
+   hard:["Which is stronger evidence for a scientific claim?","Which should be done first when troubleshooting a device?","Which is the fairer way to assign a shared task?","Which is the more reliable way to evaluate a source?","Which is the best response when new evidence disproves an idea?"]
   },
   answers:{
    easy:[
-    ["Explore a jungle 🌴","Explore an ice cave ❄️"],
-    ["Have a pet dragon 🐉","Have a robot helper 🤖"],
-    ["An extra hour of play 🎮","An extra hour of sleep 😴"],
-    ["Fly through the sky 🪽","Breathe underwater 🌊"],
-    ["Pancakes 🥞","Waffles 🧇"]
-   ],
+    ["Sandwich 🥪","Soup 🍲"],["Walk 🚶","Swim 🏊"],["Umbrella ☂️","Sunglasses 🕶️"],["Dog 🐕","Dolphin 🐬"],["Write it in a notebook 📓","Memorize it once 🧠"]],
    medium:[
-    ["Choose teams randomly 🎲","Pick your own teammates 🤝"],
-    ["Be brilliant at one skill 🎯","Be good at many skills 🌟"],
-    ["Carefully follow the clues 🔎","Trust your intuition 💡"],
-    ["Plan every detail 🗺️","Go on a spontaneous adventure 🚀"],
-    ["Invent something new 🛠️","Discover something unknown 🧭"]
-   ],
+    ["Check a trusted reference 📚","Forward an unverified message 📩"],["Practice spelling the words ✍️","Only look at the list once 👀"],["Shared checklist 📝","Unassigned group chat 💬"],["Use the crosswalk and check traffic 🚸","Run between cars 🚗"],["Read the question carefully 🔍","Choose a random answer 🎲"]],
    hard:[
-    ["Prioritize speed ⚡","Prioritize accuracy 🎯"],
-    ["Ask difficult questions ❓","Offer quick answers 💬"],
-    ["Use the same rules for everyone ⚖️","Adapt to each person's situation 🧩"],
-    ["Rely on creativity 🎨","Rely on experience 📚"],
-    ["Leader makes the final call 👑","Team reaches agreement 🤝"]
-   ]
+    ["Repeatable experimental results 🧪","A personal guess 💭"],["Check power and connections 🔌","Immediately replace the device 🛒"],["Assign based on skills and availability 🧩","Give every task to one person 👤"],["Check the author, date, and evidence 🔎","Trust the headline alone 📰"],["Review the evidence and update the conclusion 📚","Ignore the evidence ❌"]]
   }
  }
 };
-function challengeOptions(id,challenge){if(id==="debateduel"){const level=S.difficulty||"medium",items=SOCIAL_CHALLENGES.debateduel.prompts[level],index=items.indexOf(challenge);return index>=0?SOCIAL_CHALLENGES.debateduel.answers[level][index]:[]}if(id==="hottake"||id==="emojicode"||id==="secretorder")return SOCIAL_CHALLENGES[id].choices;return []}
+function challengeOptions(id,challenge){if(["debateduel","hottake","emojicode","secretorder"].includes(id)){const level=S.difficulty||"medium",items=SOCIAL_CHALLENGES[id].prompts[level],index=items.indexOf(challenge);return index>=0?SOCIAL_CHALLENGES[id].answers[level][index]:[]}return []}
 function setupSocialChallenge(id){S.difficulty="medium";S.responses={};S.challengeId=id;const list=SOCIAL_CHALLENGES[id].prompts.medium;const seed=Array.from(room+id).reduce((n,c)=>((n*33)+c.charCodeAt(0))>>>0,13);S.challenge=list[seed%list.length];renderSocialChallenge()}
 function renderSocialChallenge(){
  const ui=$("#game-ui");if(!ui)return;const id=S.challengeId,data=SOCIAL_CHALLENGES[id];if(!data)return;
