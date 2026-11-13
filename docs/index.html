@@ -722,7 +722,22 @@ const websocket={
       if (!room) return;
       room.players.delete(ws.data.id);
       room.connections.delete(ws.data.id);
-      if(room.objectGame){const role=room.objectGame.roles.get(ws.data.id);room.objectGame.roles.delete(ws.data.id);room.objectGame.clues.delete(ws.data.id);if(role==="imposter"&&room.objectGame.phase!=="ended")finishObjectGame(room,"crew","The imposter left. Crewmates win!");else maybeAdvanceObject(room)}
+      if(room.objectGame&&room.objectGame.phase!=="ended"){
+        const g=room.objectGame,role=g.roles.get(ws.data.id);
+        g.alive?.delete(ws.data.id);g.roles.delete(ws.data.id);g.names?.set(ws.data.id,(room.players.get(ws.data.id)||{}).name||"Left player");
+        g.votes?.delete(ws.data.id);g.turnOrder=(g.turnOrder||[]).filter(id=>id!==ws.data.id);
+        g.statements=(g.statements||[]).filter(x=>x.id!==ws.data.id);
+        if(role==="imposter")finishObjectGame(room,"crew","The imposter left. Crewmates win!");
+        else if(g.phase==="speaking"){
+          const alive=objectAlive(room,g),crew=alive.filter(id=>g.roles.get(id)==="crew");
+          if(crew.length<=1)finishObjectGame(room,"imposter","The imposter wins: only one crewmate remains.");
+          else if(!g.turnOrder.includes(g.turnOrder[g.turnIndex])){g.turnIndex=Math.min(g.turnIndex,g.turnOrder.length);beginObjectTurn(room,g.round,g.turnIndex)}
+          else{publishObjectGame(room)}
+        }else if(g.phase==="voting"){
+          const alive=objectAlive(room,g);
+          if( alive.length && alive.every(id=>g.votes.has(id)))resolveObjectVote(room,g.round);else publishObjectGame(room);
+        }else publishObjectGame(room);
+      }
       if(room.spellingGame&&room.spellingGame.phase==="active"){room.spellingGame.roster.delete(ws.data.id);const active=Array.from(room.spellingGame.roster).filter(id=>room.connections.has(id));if(active.length&&active.every(id=>room.spellingGame.responses.has(id)))resolveSpellingGame(room,room.spellingGame.round);else publishSpellingGame(room)}
       if (room.imposter) {
         room.imposter.roles.delete(ws.data.id);
@@ -1382,7 +1397,7 @@ function setupSocial3D(){
 function sendSocialEmote(emote){if(!S.local3D)return;S.local3D.emote=emote;S.local3D.emoteUntil=Date.now()+2200;broadcastEvent({kind:"emote",x:S.local3D.x,z:S.local3D.z,yaw:S.local3D.yaw||0,emote,emoteUntil:S.local3D.emoteUntil});toast(emote==="wave"?"👋 You waved!":"🪩 Dance party!")}
 
 
-function setupObjectImposter(){baseStage("3–16 players. One person is secretly the imposter. Everyone else receives the same object. Crewmates write one clue without naming it; then the imposter gets two guesses.");S.objectState=null;S.objectPrivate=null;$("#game-ui").innerHTML='<div class="object-panel" id="object-panel"><div class="eyebrow">🕵️ SECRET OBJECT GAME</div><div class="prompt">Object Imposter</div><div class="muted">Syncing the room…</div></div>';send({type:"objectAction",action:"sync"})}
+function setupObjectImposter(){baseStage("3+ players. One hidden imposter. Crew gets the object; everyone speaks for up to 20 seconds, then the whole room votes one player out each round. The imposter can guess at any time.");S.objectState=null;S.objectPrivate=null;send({type:"objectAction",action:"sync"});gameInterval=setInterval(()=>{if(activeGame!=="objectimposter")return;const st=S.objectState;if(!st)return;const clock=$("#object-clock");if(clock&&st.turnDeadline)clock.textContent=Math.max(0,Math.ceil((st.turnDeadline-Date.now())/1000))+"s";const vote=$("#object-vote-clock");if(vote&&st.voteDeadline)vote.textContent=Math.max(0,Math.ceil((st.voteDeadline-Date.now())/1000))+"s"},250)}
 function renderObjectImposter(){
  const ui=$("#object-panel");if(!ui)return;const st=S.objectState,priv=S.objectPrivate;
  if(!st){ui.innerHTML='<div class="prompt">🕵️ Object Imposter</div><p class="muted">Waiting for room state…</p>';return}
@@ -1392,7 +1407,7 @@ function renderObjectImposter(){
  if(st.phase==="lobby")body='<div class="social-card">There is exactly one hidden imposter. Crewmates know the object; the imposter must blend in, guess the object, and avoid being voted out. Each person speaks for up to 20 seconds, then everyone votes someone out.</div><button class="primary" id="object-start">🎭 Start unlimited game</button><p class="muted">At least 3 players · 1 imposter</p>';
  if(st.phase==="speaking"){
   const speaker=(st.turnOrder||[]).find(x=>x.id===st.currentSpeakerId);
-  body='<div class="social-card"><div class="eyebrow">ROUND '+st.round+' · SPEAKING TURN '+(st.turnIndex+1)+'/'+st.aliveCount+'</div><div class="secret-word">'+esc(speaker?.name||"Next player")+' is speaking</div><p class="muted">20 seconds to describe the object. The imposter must blend in and sound like a crewmate.</p><div class="word-chip">⏱️ '+Math.max(0,Math.ceil(((st.turnDeadline||0)-Date.now())/1000))+' seconds left</div></div>';
+  body='<div class="social-card"><div class="eyebrow">ROUND '+st.round+' · SPEAKING TURN '+(st.turnIndex+1)+'/'+st.aliveCount+'</div><div class="secret-word">'+esc(speaker?.name||"Next player")+' is speaking</div><p class="muted">20 seconds to describe the object. The imposter must blend in and sound like a crewmate.</p><div class="word-chip">⏱️ <span id="object-clock">'+Math.max(0,Math.ceil(((st.turnDeadline||0)-Date.now())/1000))+'</span> seconds left</div></div>';
   if(meTurn&&youAlive)body+='<form class="social-form" id="object-speak-form"><input class="social-input" id="object-speak-input" maxlength="180" placeholder="Say what you think the object is like…"><button class="primary">SEND TURN</button></form>';
   else body+='<p class="muted">Wait for your turn. You can listen to the other players.</p>';
   if(priv?.role==="crew")body+='<div class="word-chip">🔒 Your secret object: '+esc(priv.objectWord||"")+'</div>';
@@ -1401,7 +1416,7 @@ function renderObjectImposter(){
   body+=clueBlock;
  }
  if(st.phase==="voting"){
-  body='<div class="social-card"><div class="eyebrow">ROUND '+st.round+' · VOTE OUT ONE PLAYER</div><div class="secret-word">Who is the imposter?</div><p class="muted">'+st.votesCount+'/'+st.aliveCount+' votes submitted · '+Math.max(0,Math.ceil(((st.voteDeadline||0)-Date.now())/1000))+' seconds to vote</p></div>';
+  body='<div class="social-card"><div class="eyebrow">ROUND '+st.round+' · VOTE OUT ONE PLAYER</div><div class="secret-word">Who is the imposter?</div><p class="muted">'+st.votesCount+'/'+st.aliveCount+' votes submitted · <span id="object-vote-clock">'+Math.max(0,Math.ceil(((st.voteDeadline||0)-Date.now())/1000))+'</span> seconds to vote</p></div>';
   if(youAlive&&!Object.keys(S.myVote||{}).length)body+='<div class="board" id="object-vote-list" style="grid-template-columns:repeat(2,minmax(0,1fr));max-width:600px">'+(st.alivePlayers||[]).filter(p=>p.id!==serverPlayerId).map(p=>'<button class="ctrl" data-object-vote="'+esc(p.id)+'">'+esc(p.name)+'</button>').join("")+'</div>';
   else body+='<div class="word-chip">✓ Your vote is locked. Waiting for the room…</div>';
   if(priv?.role==="imposter"&&youAlive)body+='<form class="social-form" id="object-guess-form"><input class="social-input" id="object-guess-input" maxlength="60" placeholder="You can still guess the object…"><button class="primary">GUESS OBJECT</button></form>';
