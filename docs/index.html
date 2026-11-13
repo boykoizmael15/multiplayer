@@ -768,6 +768,13 @@ const websocket={
       if (!room) return;
       room.players.delete(ws.data.id);
       room.connections.delete(ws.data.id);
+      if(room.tttGame){
+        const g=room.tttGame;
+        let changed=false;
+        if(g.seats?.X===ws.data.id){g.seats.X=null;changed=true}
+        if(g.seats?.O===ws.data.id){g.seats.O=null;changed=true}
+        if(changed){g.board=Array(9).fill("");g.moves=0;g.turn="X";g.phase="waiting";g.winner=null;publishTtt(room)}
+      }
       if(room.objectGame&&room.objectGame.phase!=="ended"){
         const g=room.objectGame,role=g.roles.get(ws.data.id);
         g.alive?.delete(ws.data.id);g.roles.delete(ws.data.id);g.names?.set(ws.data.id,(room.players.get(ws.data.id)||{}).name||"Left player");
