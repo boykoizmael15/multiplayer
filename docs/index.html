@@ -501,14 +501,36 @@ function startObjectGame(room){
  notifyRoom(room.code,"🕵️ Object Imposter begins! One imposter is secretly blending in. Every player gets 20 seconds to speak.");
  beginObjectTurn(room,g.round,0);
 }
-function spellingGamePublic(room){const g=room.spellingGame;if(!g)return{phase:"lobby",round:0,scores:[],submittedCount:0,playerCount:0,results:[]};const o={phase:g.phase,round:g.round,deadline:g.deadline||null,submittedCount:g.responses.size,playerCount:g.roster.size,scores:Array.from(g.scores.entries()).map(([id,score])=>({id,name:(room.players.get(id)||{}).name||"Player",score})).sort((a,b)=>b.score-a.score)};if(g.phase==="ended"){o.answer=g.word;o.results=Array.from(g.roster).map(id=>{const r=g.responses.get(id);return{name:(room.players.get(id)||{}).name||g.names.get(id)||"Player",spelling:r?r.spelling:"",correct:!!(r&&r.correct)}})}return o}
+function spellingGamePublic(room){
+ const g=room.spellingGame;if(!g)return{phase:"lobby",round:0,scores:[],submittedCount:0,playerCount:0,results:[]};
+ const scores=Array.from(g.scores.entries()).map(([id,score])=>({id,name:(room.players.get(id)||{}).name||g.names.get(id)||"Player",score})).sort((a,b)=>b.score-a.score);
+ const o={phase:g.phase,round:g.round,deadline:g.deadline||null,submittedCount:g.responses.size,playerCount:g.roster.size,scores};
+ if(g.phase==="ended"){o.answer=g.word;o.results=Array.from(g.roster).map(id=>{const r=g.responses.get(id);return{name:(room.players.get(id)||{}).name||g.names.get(id)||"Player",spelling:r?r.spelling:"",correct:!!(r&&r.correct),points:r?.points||0,seconds:r?.seconds??null}}).sort((a,b)=>b.points-a.points||(a.seconds??99)-(b.seconds??99))}
+ return o;
+}
 function publishSpellingGame(room){serverRef.publish(room.code,JSON.stringify({type:"spellingState",state:spellingGamePublic(room)}))}
 function sendSpellingPrivate(room,id){const g=room.spellingGame;if(g&&g.phase==="active"){const r=g.responses.get(id);sendTo(room,id,{type:"spellingPrivate",round:g.round,word:g.word,sentence:g.sentence,submitted:!!r})}}
 function cleanSpelling(s){return String(s||"").toLowerCase().replace(/[^a-z]/g,"")}
-function resolveSpellingGame(room,round){const g=room.spellingGame;if(!g||g.round!==round||g.phase!=="active")return;if(g.timer)clearTimeout(g.timer);g.timer=null;g.phase="ended";for(const [id,r] of g.responses){r.correct=cleanSpelling(r.spelling)===cleanSpelling(g.word);if(r.correct)g.scores.set(id,(g.scores.get(id)||0)+1)}publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee answer: "+g.word+". Round complete!")}
-function startSpellingGame(room,difficulty="medium"){const ids=Array.from(room.players.keys());if(ids.length<2){notifyRoom(room.code,"Spelling Bee needs at least 2 players.");return}if(room.spellingGame&&room.spellingGame.timer)clearTimeout(room.spellingGame.timer);const pool=SPELLING_WORDS.filter(w=>w.difficulty===difficulty||(!w.difficulty&&difficulty==="medium"));const item=pickRoomDeck(room,"spelling-"+difficulty,pool.length?pool:SPELLING_WORDS),old=room.spellingGame,g={phase:"active",difficulty,round:(old&&old.round||0)+1,word:item.word,sentence:item.sentence,roster:new Set(ids),names:new Map(Array.from(room.players.entries()).map(([id,p])=>[id,p.name])),responses:new Map(),scores:old&&old.scores?old.scores:new Map(),deadline:Date.now()+65000,timer:null};room.spellingGame=g;for(const id of ids)sendSpellingPrivate(room,id);g.timer=setTimeout(()=>resolveSpellingGame(room,g.round),65000);publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee! Listen to the voice narrator and spell the word.")}
-
-
+function resolveSpellingGame(room,round){
+ const g=room.spellingGame;if(!g||g.round!==round||g.phase!=="active")return;
+ if(g.timer)clearTimeout(g.timer);g.timer=null;g.phase="ended";
+ for(const [id,r] of g.responses){
+  r.correct=cleanSpelling(r.spelling)===cleanSpelling(g.word);
+  if(r.correct){const elapsed=Math.max(0,Math.min(20,(r.submittedAt-g.startedAt)/1000));r.seconds=Number(elapsed.toFixed(1));r.points=10+Math.max(0,Math.ceil((20-elapsed)/2));g.scores.set(id,(g.scores.get(id)||0)+r.points)}
+  else{r.points=0;r.seconds=null}
+ }
+ publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee round complete! Correct answers earn 10 points plus a speed bonus.");
+}
+function startSpellingGame(room,difficulty="medium"){
+ const ids=Array.from(room.players.keys());if(ids.length<2){notifyRoom(room.code,"Spelling Bee needs at least 2 players. Invite a friend!");return}
+ if(room.spellingGame&&room.spellingGame.timer)clearTimeout(room.spellingGame.timer);
+ const pool=SPELLING_WORDS.filter(w=>w.difficulty===difficulty||(!w.difficulty&&difficulty==="medium"));
+ const item=pickRoomDeck(room,"spelling-"+difficulty,pool.length?pool:SPELLING_WORDS),old=room.spellingGame,now=Date.now();
+ const g={phase:"active",difficulty,round:(old&&old.round||0)+1,word:item.word,sentence:item.sentence,roster:new Set(ids),names:new Map(Array.from(room.players.entries()).map(([id,p])=>[id,p.name])),responses:new Map(),scores:old&&old.scores?old.scores:new Map(),startedAt:now,deadline:now+20000,timer:null};
+ room.spellingGame=g;for(const id of ids)sendSpellingPrivate(room,id);
+ g.timer=setTimeout(()=>resolveSpellingGame(room,g.round),20000);
+ publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee! Listen carefully — you have 20 seconds to type the word.");
+}
 function getTttGame(room){
  if(!room.tttGame)room.tttGame={board:Array(9).fill(""),moves:0,turn:"X",seats:{X:null,O:null},phase:"waiting",winner:null};
  return room.tttGame;
@@ -669,7 +691,7 @@ const websocket={
         const action=String(msg.action||"");
         if(action==="sync"){if(!room.spellingGame)room.spellingGame={phase:"lobby",round:0,scores:new Map(),roster:new Set(),responses:new Map(),names:new Map(),timer:null};const g=room.spellingGame;if(g.phase==="active"&&!g.roster.has(player.id)){g.roster.add(player.id);g.names.set(player.id,player.name)}ws.send(JSON.stringify({type:"spellingState",state:spellingGamePublic(room)}));sendSpellingPrivate(room,player.id);return}
         if(action==="start"){startSpellingGame(room,String(msg.difficulty||"medium"));return}
-        const g=room.spellingGame;if(action==="submit"&&g&&g.phase==="active"&&g.roster.has(player.id)&&!g.responses.has(player.id)){const spelling=String(msg.spelling||"").trim().slice(0,48);if(!spelling)return;g.responses.set(player.id,{spelling,correct:false});const active=Array.from(g.roster).filter(id=>room.connections.has(id));if(active.every(id=>g.responses.has(id)))resolveSpellingGame(room,g.round);else publishSpellingGame(room);return}
+        const g=room.spellingGame;if(action==="submit"&&g&&g.phase==="active"&&g.roster.has(player.id)&&!g.responses.has(player.id)){const spelling=String(msg.spelling||"").trim().slice(0,48);if(!spelling)return;g.responses.set(player.id,{spelling,submittedAt:Date.now(),correct:false,points:0});const active=Array.from(g.roster).filter(id=>room.connections.has(id));if(active.every(id=>g.responses.has(id)))resolveSpellingGame(room,g.round);else publishSpellingGame(room);return}
         return;
       }
 
@@ -1534,7 +1556,7 @@ function renderObjectImposter(){
  const gf=$("#object-guess-form");if(gf)gf.onsubmit=e=>{e.preventDefault();const guess=$("#object-guess-input").value.trim();if(guess){send({type:"objectAction",action:"guess",guess});$("#object-guess-input").value=""}};
  const votes=$("#object-vote-list");if(votes)votes.onclick=e=>{const b=e.target.closest("[data-object-vote]");if(b){S.myVote={target:b.dataset.objectVote};send({type:"objectAction",action:"vote",target:b.dataset.objectVote});renderObjectImposter()}};
 }
-function setupSpellingBee(){baseStage("Listen to the voice narrator say the word, use it in a sentence, and repeat it. Type what you hear; replay the narrator whenever you need.");S.spellingState=null;S.spellingPrivate=null;S.spellingSubmitted=false;S.narratedRound=null;$("#game-ui").innerHTML='<div class="spelling-panel" id="spelling-panel"><div class="eyebrow">🐝 THE ROOM SPELLING BEE</div><div class="prompt">Spelling Bee</div><p class="muted">Preparing the narrator…</p></div>';send({type:"spellingAction",action:"sync"})}
+function setupSpellingBee(){baseStage("Listen to the voice narrator say the word, use it in a sentence, and repeat it. Type what you hear; replay the narrator whenever you need.");S.spellingState=null;S.spellingPrivate=null;S.spellingSubmitted=false;S.narratedRound=null;$("#game-ui").innerHTML='<div class="spelling-panel" id="spelling-panel"><div class="eyebrow">🐝 THE ROOM SPELLING BEE</div><div class="prompt">Spelling Bee</div><p class="muted">Preparing the narrator…</p></div>';send({type:"spellingAction",action:"sync"});gameInterval=setInterval(()=>{if(activeGame!=="spellingbee")return;const st=S.spellingState;if(!st||st.phase!=="active")return;const clock=$("#spell-countdown");if(clock)clock.textContent=Math.max(0,Math.ceil((st.deadline-Date.now())/1000))},200)}
 function speakBeeWord(){
  const p=S.spellingPrivate;if(!p||!p.word)return;if(!("speechSynthesis"in window)||typeof SpeechSynthesisUtterance==="undefined"){toast("Voice narration is not supported in this browser.");return}
  const synth=window.speechSynthesis;synth.cancel();const voice=synth.getVoices().find(v=>/^en/i.test(v.lang))||null;
@@ -1546,12 +1568,12 @@ function renderSpellingBee(){
  const scores=(st.scores||[]).map(x=>'<span class="word-chip">🏅 '+esc(x.name)+' · '+x.score+'</span>').join("");let body="";
  if(st.phase==="lobby")body='<div class="social-card">The narrator says the word, reads a sentence, then repeats it. Type what you hear. Every correct spelling earns one point.</div>'+difficultyControl("spell-difficulty",S.difficulty||"medium")+'<button class="primary" id="spell-start">🐝 Start spelling round</button>';
  if(st.phase==="active"){
-  body='<div class="social-card"><div class="eyebrow">🔊 LISTEN CAREFULLY</div><div class="secret-word">Your word is ready</div><div class="spelling-sentence">'+esc(p&&p.sentence||"Listen to the narrator for the sentence.")+'</div><p class="muted">'+st.submittedCount+'/'+st.playerCount+' players submitted · '+Math.max(0,Math.ceil((st.deadline-Date.now())/1000))+' sec left</p></div>';
+  body='<div class="social-card"><div class="eyebrow">🔊 LISTEN CAREFULLY</div><div class="secret-word">🎧 The word is hidden — listen to the narrator</div><p class="muted">'+st.submittedCount+'/'+st.playerCount+' players submitted · <b><span id="spell-countdown">'+Math.max(0,Math.ceil((st.deadline-Date.now())/1000))+'</span> seconds left</b></p></div>';
   body+=S.spellingSubmitted?'<div class="word-chip">✓ Spelling submitted — wait for everyone else</div>':'<form class="social-form" id="spell-form"><input class="social-input" id="spell-input" maxlength="48" autocomplete="off" placeholder="Type the spelling you heard…"><button class="primary">SUBMIT</button></form>';
   body+='<div class="narrator-bar"><button class="ctrl" id="spell-repeat">🔊 Hear / repeat word</button><button class="ctrl" id="spell-rules">📣 Read instructions</button></div>';
  }
- if(st.phase==="ended")body='<div class="social-card"><div class="eyebrow">ANSWER REVEALED</div><div class="secret-word">'+esc(st.answer||"")+'</div><div class="spelling-sentence">'+esc(p&&p.sentence||"")+'</div><p class="muted">The spelling round is complete.</p></div><div class="clue-feed">'+(st.results||[]).map(r=>'<div class="clue-line"><b>'+esc(r.name)+'</b>'+esc(r.spelling||"No answer")+' · '+(r.correct?"✅ Correct":"❌ Not quite")+'</div>').join("")+'</div><button class="primary" id="spell-next">🔁 Next word</button>';
- ui.innerHTML='<div class="eyebrow">🐝 THE ROOM SPELLING BEE</div><div class="prompt">Spelling Bee</div>'+body+'<div class="spelling-score">'+scores+'</div>';
+ if(st.phase==="ended")body='<div class="social-card"><div class="eyebrow">ANSWER REVEALED</div><div class="secret-word">'+esc(st.answer||"")+'</div><p class="muted">The correct spelling. Your answer is shown below.</p></div><h3>🏆 Round leaderboard</h3><div class="clue-feed">'+(st.results||[]).map((r,i)=>'<div class="clue-line"><b>#'+(i+1)+' '+esc(r.name)+'</b> · '+esc(r.spelling||"No answer")+' · '+(r.correct?"✅ Correct":"❌ Not quite")+' · '+r.points+' pts'+(r.seconds!==null?' · '+r.seconds+'s':'')+'</div>').join("")+'</div><button class="primary" id="spell-next">🔁 Next word</button>';
+ ui.innerHTML='<div class="eyebrow">🐝 THE ROOM SPELLING BEE</div><div class="prompt">Spelling Bee</div>'+body+'<h3>🏆 Room leaderboard</h3><div class="spelling-score">'+(scores||'<span class="muted">No points yet</span>')+'</div>';
  const start=$("#spell-start");if(start)start.onclick=()=>{S.difficulty=$("#spell-difficulty")?.value||S.difficulty||"medium";send({type:"spellingAction",action:"start",difficulty:S.difficulty})};
  const next=$("#spell-next");if(next)next.onclick=()=>{S.difficulty=$("#spell-difficulty")?.value||S.difficulty||"medium";send({type:"spellingAction",action:"start",difficulty:S.difficulty})};
  const repeat=$("#spell-repeat");if(repeat)repeat.onclick=speakBeeWord;
