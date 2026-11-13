@@ -1,7 +1,6 @@
-// Paste your Supabase Project URL and publishable key here.
-// Get them from Supabase Dashboard → Project Settings → API.
-// Never put a secret/service_role key in this file.
+// Public browser configuration for Party Arcade.
+// This is the Supabase publishable key, not a secret/service_role key.
 window.PARTY_ARCADE_SUPABASE = {
-  url: "https://YOUR-PROJECT-REF.supabase.co",
-  anonKey: "YOUR_SUPABASE_PUBLISHABLE_KEY"
+  url: "https://atsdfqebtdpsnakcznpr.supabase.co",
+  anonKey: "sb_publishable_aRpMwOwdXI69zdX8bq0rbg_3iCX-Qv_"
 };
