@@ -1406,17 +1406,40 @@ const SOCIAL_CHALLENGES={
  debateduel:{
   title:"⚖️ Debate Duel",
   prompts:{
-   easy:["Would you rather explore a jungle or an ice cave?","Is it better to have a pet dragon or a robot helper?","Should every day include an extra hour of play?","Would you rather be able to fly or breathe underwater?","Is breakfast food good at every meal?"],
-   medium:["Should people choose teams randomly or pick their own?","Is it better to be brilliant at one skill or good at many?","Should a mystery be solved with clues or intuition?","Is a planned adventure better than a spontaneous one?","Would you rather invent something or discover something?"],
-   hard:["Should a team prioritize speed or accuracy?","Is it better to ask difficult questions or offer quick answers?","Should a fair decision always treat everyone identically?","Is creativity more useful than experience when solving new problems?","Should a leader make the final call or seek full agreement?"]
-  },choices:["Option A / Yes","Option B / No"]
+   easy:["Which would you rather explore?","Which helper would you choose?","What should a perfect day include?","Which ability would you rather have?","Which breakfast is best?"],
+   medium:["How should a group choose teams?","Which is more valuable in life?","Which is better for solving a mystery?","Which makes a better adventure?","Which discovery would you prefer?"],
+   hard:["What should a team prioritize?","Which is better for solving difficult problems?","What makes a decision fair?","Which helps more with unfamiliar problems?","How should a leader make important decisions?"]
+  },
+  answers:{
+   easy:[
+    ["Explore a jungle 🌴","Explore an ice cave ❄️"],
+    ["Have a pet dragon 🐉","Have a robot helper 🤖"],
+    ["An extra hour of play 🎮","An extra hour of sleep 😴"],
+    ["Fly through the sky 🪽","Breathe underwater 🌊"],
+    ["Pancakes 🥞","Waffles 🧇"]
+   ],
+   medium:[
+    ["Choose teams randomly 🎲","Pick your own teammates 🤝"],
+    ["Be brilliant at one skill 🎯","Be good at many skills 🌟"],
+    ["Carefully follow the clues 🔎","Trust your intuition 💡"],
+    ["Plan every detail 🗺️","Go on a spontaneous adventure 🚀"],
+    ["Invent something new 🛠️","Discover something unknown 🧭"]
+   ],
+   hard:[
+    ["Prioritize speed ⚡","Prioritize accuracy 🎯"],
+    ["Ask difficult questions ❓","Offer quick answers 💬"],
+    ["Use the same rules for everyone ⚖️","Adapt to each person's situation 🧩"],
+    ["Rely on creativity 🎨","Rely on experience 📚"],
+    ["Leader makes the final call 👑","Team reaches agreement 🤝"]
+   ]
+  }
  }
 };
-function challengeOptions(id){if(id==="hottake")return SOCIAL_CHALLENGES[id].choices;if(id==="debateduel")return SOCIAL_CHALLENGES[id].choices;if(id==="emojicode")return SOCIAL_CHALLENGES[id].choices; if(id==="secretorder")return SOCIAL_CHALLENGES[id].choices;return []}
+function challengeOptions(id,challenge){if(id==="debateduel"){const level=S.difficulty||"medium",items=SOCIAL_CHALLENGES.debateduel.prompts[level],index=items.indexOf(challenge);return index>=0?SOCIAL_CHALLENGES.debateduel.answers[level][index]:[]}if(id==="hottake"||id==="emojicode"||id==="secretorder")return SOCIAL_CHALLENGES[id].choices;return []}
 function setupSocialChallenge(id){S.difficulty="medium";S.responses={};S.challengeId=id;const list=SOCIAL_CHALLENGES[id].prompts.medium;const seed=Array.from(room+id).reduce((n,c)=>((n*33)+c.charCodeAt(0))>>>0,13);S.challenge=list[seed%list.length];renderSocialChallenge()}
 function renderSocialChallenge(){
  const ui=$("#game-ui");if(!ui)return;const id=S.challengeId,data=SOCIAL_CHALLENGES[id];if(!data)return;
- const choices=challengeOptions(id),responses=Object.entries(S.responses||{}).map(([pid,value])=>({player:players.find(p=>p.id===pid)?.name||"Player",value}));
+ const choices=challengeOptions(id,S.challenge),responses=Object.entries(S.responses||{}).map(([pid,value])=>({player:players.find(p=>p.id===pid)?.name||"Player",value}));
  let content='<div class="word-clue" style="font-size:20px">'+esc(S.challenge)+'</div>';
  if(id==="commonground")content+='<form class="word-entry" id="social-free-form"><input id="social-free-answer" maxlength="90" placeholder="Your idea…" autocomplete="off"><button>SHARE</button></form>';
  else content+='<div class="board" style="grid-template-columns:repeat(2,minmax(0,1fr));max-width:600px">'+choices.map((c,i)=>'<button class="ctrl" data-social-choice="'+i+'">'+esc(c)+'</button>').join("")+'</div>';
