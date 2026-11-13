@@ -655,8 +655,21 @@ function createHostWrapper(info){
 async function openHostChannel(info){
  if(info.id===myId)return null;if(hostChannels.has(info.id))return hostChannels.get(info.id);
  const channel=sbClient.channel("party-player:"+room+":"+info.id,{config:{private:true,broadcast:{self:false}}});hostChannels.set(info.id,channel);
- await new Promise((resolve,reject)=>{let done=false;const timer=setTimeout(()=>{if(!done){done=true;reject(new Error("Timed out opening a player's private channel."))}},8000);channel.subscribe(status=>{if(status==="SUBSCRIBED"&&!done){done=true;clearTimeout(timer);resolve()}else if((status==="CHANNEL_ERROR"||status==="TIMED_OUT")&&!done){done=true;clearTimeout(timer);reject(new Error("Could not open a player's private channel."))}})});
- return channel;
+ try{
+  await new Promise((resolve,reject)=>{
+   let done=false;
+   const timer=setTimeout(()=>{if(!done){done=true;reject(new Error("Timed out opening a player's private channel."))}},10000);
+   channel.subscribe(status=>{
+    if(status==="SUBSCRIBED"&&!done){done=true;clearTimeout(timer);resolve()}
+    else if((status==="CHANNEL_ERROR"||status==="TIMED_OUT"||status==="CLOSED")&&!done){done=true;clearTimeout(timer);reject(new Error("Could not open a player's private channel ("+status+"). Check Supabase Realtime authorization."))}
+   });
+  });
+  return channel;
+ }catch(error){
+  hostChannels.delete(info.id);
+  try{await sbClient.removeChannel(channel)}catch{}
+  throw error;
+ }
 }
 async function ensureHostMember(info){
  if(!isRoomHost||!roomEngine||!info?.id)return;const r=roomEngine.room(room);
