@@ -200,7 +200,6 @@ const runtimeShim={serve(options){return options}};
 const app=runtimeShim.serve({
   port: 8080,
   fetch(req, server) {
-    serverRef = server;
     const url = new URL(req.url);
     if (url.pathname === "/health") return new Response("ok", { headers: { "content-type": "text/plain" } });
     if (url.pathname === "/ws") {
@@ -437,8 +436,12 @@ return {websocket:app.websocket,room(code){return getRoom(code)}};
 
 }
 
-export class GameRoom extends DurableObject{
- constructor(ctx,env){super(ctx,env);this.engine=createRoomEngine()}
+export class GameRoom extends DurableObject {
+  engine: ReturnType<typeof createRoomEngine>;
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    this.engine = createRoomEngine();
+  }
  async fetch(request){
   const url=new URL(request.url);
   if(url.pathname!=="/ws")return new Response("Not found",{status:404});
