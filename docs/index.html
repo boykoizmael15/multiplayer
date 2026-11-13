@@ -397,10 +397,10 @@ const SPELLING_WORDS=[
 ];
 function objectAlive(room,g){return Array.from(g.alive||[]).filter(id=>room.players.has(id))}
 function objectGamePublic(room){
- const g=room.objectGame;if(!g)return{phase:"lobby",round:0,players:[],turnIndex:0,turnDeadline:null,voteDeadline:null,statements:[],votesCount:0,crewLeft:0,aliveCount:0};
+ const g=room.objectGame;if(!g)return{phase:"lobby",round:0,players:[],roomPlayers:room.players.size,turnIndex:0,turnDeadline:null,voteDeadline:null,statements:[],votesCount:0,crewLeft:0,aliveCount:0};
  const alive=objectAlive(room,g),crewLeft=alive.filter(id=>g.roles.get(id)==="crew").length;
  const o={
-  phase:g.phase,round:g.round,turnIndex:g.turnIndex||0,
+  phase:g.phase,round:g.round,roomPlayers:room.players.size,turnIndex:g.turnIndex||0,
   currentSpeakerId:g.turnOrder?.[g.turnIndex]||null,
   turnOrder:(g.turnOrder||[]).map(id=>({id,name:(room.players.get(id)||{}).name||"Player"})),
   turnDeadline:g.turnDeadline||null,voteDeadline:g.voteDeadline||null,
@@ -478,8 +478,16 @@ function resolveObjectVote(room,round){
 }
 function startObjectGame(room){
  const list=Array.from(room.players.values());
- if(list.length<3){notifyRoom(room.code,"Object Imposter needs at least 3 players. Invite more friends!");return}
- if(room.objectGame&&room.objectGame.phase!=="lobby"&&room.objectGame.phase!=="ended"){notifyRoom(room.code,"An Object Imposter game is already running.");return}
+ // Reconcile Supabase room presence with the host's in-browser game engine.
+ if(list.length<3&&isRoomHost&&roomMembers.size>=3){
+  const missing=Array.from(roomMembers.values()).filter(member=>!room.players.has(member.id));
+  if(missing.length){
+   Promise.all(missing.map(member=>ensureHostMember(member))).then(()=>setTimeout(()=>startObjectGame(room),200));
+   notifyRoom(room.code,"Connecting all room players before starting Object Imposter…");return;
+  }
+ }
+ if(list.length<3){notifyRoom(room.code,"Object Imposter needs at least 3 connected players. The room currently has "+list.length+". Wait a moment for everyone to connect, then try again.");return}
+ if(room.objectGame&&room.objectGame.phase!=="lobby"&&room.objectGame.phase!=="ended"){notifyRoom(room.code,"An Object Imposter game is already running. Finish that game or refresh the room.");return}
  const imp=list[Math.floor(Math.random()*list.length)],answer=OBJECT_ITEMS[Math.floor(Math.random()*OBJECT_ITEMS.length)],roles=new Map();
  list.forEach(p=>roles.set(p.id,p.id===imp.id?"imposter":"crew"));
  const alive=new Set(list.map(p=>p.id)),names=new Map(list.map(p=>[p.id,p.name]));
@@ -1475,7 +1483,7 @@ function renderObjectImposter(){
  const youAlive=!!priv?.alive,meTurn=st.currentSpeakerId===serverPlayerId;
  const clueBlock='<div class="social-card"><b>🗣️ What everyone has said</b><div class="clue-feed">'+((st.statements||[]).map(x=>'<div class="clue-line"><b>'+esc(x.name)+'</b>: '+esc(x.text)+'</div>').join("")||'<div class="muted">No statements yet…</div>')+'</div></div>';
  let body="";
- if(st.phase==="lobby")body='<div class="social-card">There is exactly one hidden imposter. Crewmates know the object; the imposter must blend in, guess the object, and avoid being voted out. Each person speaks for up to 20 seconds, then everyone votes someone out.</div><button class="primary" id="object-start">🎭 Start unlimited game</button><p class="muted">At least 3 players · 1 imposter</p>';
+ if(st.phase==="lobby")body='<div class="social-card">There is exactly one hidden imposter. Crewmates know the object; the imposter must blend in, guess the object, and avoid being voted out. Each person speaks for up to 20 seconds, then everyone votes someone out.</div><button class="primary" id="object-start">🎭 Start unlimited game</button><p class="muted">'+(st.roomPlayers||0)+' connected in the game engine · needs 3 to start · exactly 1 imposter</p>';
  if(st.phase==="speaking"){
   const speaker=(st.turnOrder||[]).find(x=>x.id===st.currentSpeakerId);
   body='<div class="social-card"><div class="eyebrow">ROUND '+st.round+' · SPEAKING TURN '+(st.turnIndex+1)+'/'+st.aliveCount+'</div><div class="secret-word">'+esc(speaker?.name||"Next player")+' is speaking</div><p class="muted">20 seconds to describe the object. The imposter must blend in and sound like a crewmate.</p><div class="word-chip">⏱️ <span id="object-clock">'+Math.max(0,Math.ceil(((st.turnDeadline||0)-Date.now())/1000))+'</span> seconds left</div></div>';
