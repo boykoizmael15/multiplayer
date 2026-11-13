@@ -580,7 +580,7 @@ const serverRef={publish(code,payload){const room=rooms.get(code);if(!room)retur
 const websocket={
     open(ws) {
       const room = getRoom(ws.data.room);
-      const p = { id: ws.data.id, name: ws.data.name, color: ws.data.color, x: 450, y: 250, alive: true };
+      const p = { id: ws.data.id, name: ws.data.name, color: ws.data.color, x: 450, y: 250, alive: true, inGame:false, gameId:null };
       room.players.set(ws.data.id, p);
       room.connections.set(ws.data.id, ws);
       ws.subscribe(ws.data.room);
@@ -604,6 +604,12 @@ const websocket={
       const room = getRoom(ws.data.room);
       const player = room.players.get(ws.data.id);
       if (!player) return;
+      if (msg.type === "gamePresence") {
+        player.inGame=!!msg.active;
+        player.gameId=player.inGame?String(msg.gameId||"").slice(0,24):null;
+        serverRef.publish(ws.data.room,JSON.stringify({type:"players",players:Array.from(room.players.values())}));
+        return;
+      }
       if (msg.type === "rename") {
         const nextName=String(msg.name||"").trim().replace(/\\s+/g," ").slice(0,20);
         if(!nextName)return;
@@ -1024,7 +1030,7 @@ $("#edit-name").addEventListener("click",changePlayerName);
 function renderPlayers(){
  const list=players.slice().sort((a,b)=>a.id===serverPlayerId?-1:b.id===serverPlayerId?1:a.name.localeCompare(b.name));
  $("#room-label").textContent=(room==="PUBLIC"?"Public lobby":"Room "+room)+" · "+players.length+"/16";
- playersEl.innerHTML=list.length?list.map(p=>'<div class="player-row"><span class="avatar" style="background:'+esc(p.color)+'">'+esc((p.name||"?").slice(0,1).toUpperCase())+'</span><span>'+esc(p.name)+(p.id===serverPlayerId?' <b style="color:#8cf0c7">(you)</b>':'')+'</span><span class="score" id="score-'+esc(p.id)+'">'+(scores[p.id]||"")+'</span></div>').join(""):'<div class="muted">No players yet. Invite your friends!</div>';
+ playersEl.innerHTML=list.length?list.map(p=>'<div class="player-row"><span class="avatar" title="'+(p.inGame?'Playing '+esc(p.gameId||'game'):'In room')+'" style="background:'+(p.inGame?'#ffd84d':esc(p.color))+ ';color:'+(p.inGame?'#332400':'#ffffff')+';box-shadow:'+(p.inGame?'0 0 0 3px #ffd84d55,0 0 14px #ffd84d88':'none')+'">'+esc((p.name||"?").slice(0,1).toUpperCase())+'</span><span>'+esc(p.name)+(p.id===serverPlayerId?' <b style="color:#8cf0c7">(you)</b>':'')+'</span><span class="score" id="score-'+esc(p.id)+'">'+(scores[p.id]||"")+'</span></div>').join(""):'<div class="muted">No players yet. Invite your friends!</div>';
 }
 function addChat(name,text,color){const line=document.createElement("div");line.className="chat-msg";line.innerHTML='<b style="color:'+esc(color||"#9feaff")+'">'+esc(name)+':</b> '+esc(text);chatLog.appendChild(line);chatLog.scrollTop=chatLog.scrollHeight;if(chatLog.children.length>50)chatLog.removeChild(chatLog.firstChild)}
 $("#chat-form").addEventListener("submit",e=>{e.preventDefault();const v=$("#chat-input").value.trim();if(!v)return;send({type:"chat",text:v});$("#chat-input").value=""});
@@ -1033,7 +1039,7 @@ $("#create-room").onclick=()=>{const code=Math.random().toString(36).slice(2,7).
 $("#copy-room").onclick=async()=>{const invite=new URL(location.href);invite.searchParams.delete("room");if(room!=="PUBLIC")invite.searchParams.set("room",room);const url=invite.toString();try{await navigator.clipboard.writeText(url);toast("Invite link copied!")}catch{toast("Room code: "+room)}};
 const params=new URLSearchParams(location.search);connectRoom(params.get("room")||"PUBLIC");
 function cleanupTimers(){if(raf)cancelAnimationFrame(raf);if(gameInterval)clearInterval(gameInterval);if(gameTimeout)clearTimeout(gameTimeout);if(S&&typeof S.threeCleanup==="function"){try{S.threeCleanup()}catch{}}if(window.speechSynthesis)window.speechSynthesis.cancel();raf=0;gameInterval=null;gameTimeout=null}
-function closeGame(){cleanupTimers();activeGame=null;overlay.classList.remove("show")}
+function closeGame(){send({type:"gamePresence",active:false});cleanupTimers();activeGame=null;overlay.classList.remove("show")}
 function baseStage(help){stage.innerHTML='<div class="game-ui" id="game-ui"></div><p class="game-help">'+help+'</p><div class="controls" id="game-controls"></div>'}
 function canvasStage(help){stage.innerHTML='<canvas id="game-canvas" width="900" height="500"></canvas><p class="game-help">'+help+'</p><div class="controls" id="game-controls"></div>'}
 function addControls(items){const c=$("#game-controls");if(!c)return;c.innerHTML=items.map(x=>'<button class="ctrl" data-control="'+x.id+'">'+x.label+'</button>').join("");c.onclick=e=>{const b=e.target.closest("[data-control]");if(b)control(b.dataset.control)}}
@@ -1059,7 +1065,7 @@ function control(id){
 }
 function openGame(id){
  cleanupTimers();activeGame=id;S={};const g=GAMES.find(x=>x.id===id);if(!g)return;
- $("#game-title").textContent=g.emoji+" "+g.name;$("#game-subtitle").textContent=g.players+" players · "+g.keys+" · Room "+room;overlay.classList.add("show");chatLog.innerHTML="";renderPlayers();
+ $("#game-title").textContent=g.emoji+" "+g.name;$("#game-subtitle").textContent=g.players+" players · "+g.keys+" · Room "+room;overlay.classList.add("show");chatLog.innerHTML="";renderPlayers();send({type:"gamePresence",active:true,gameId:id});
  const help={
  sketch:"Drag or touch the canvas to draw. Every stroke is shared with this room in real time.",
  parkour:"Run automatically. Jump over the glowing blocks. Press SPACE or ↑, or tap JUMP.",
@@ -1545,7 +1551,19 @@ function setupSocial3D(){
 function sendSocialEmote(emote){if(!S.local3D)return;S.local3D.emote=emote;S.local3D.emoteUntil=Date.now()+2200;broadcastEvent({kind:"emote",x:S.local3D.x,z:S.local3D.z,yaw:S.local3D.yaw||0,emote,emoteUntil:S.local3D.emoteUntil});toast(emote==="wave"?"👋 You waved!":"🪩 Dance party!")}
 
 
-function setupObjectImposter(){baseStage("3+ players. One hidden imposter. Crew gets the object; everyone speaks for up to 20 seconds, then the whole room votes one player out each round. The imposter can guess at any time.");S.objectState=null;S.objectPrivate=null;send({type:"objectAction",action:"sync"});gameInterval=setInterval(()=>{if(activeGame!=="objectimposter")return;const st=S.objectState;if(!st)return;const clock=$("#object-clock");if(clock&&st.turnDeadline)clock.textContent=Math.max(0,Math.ceil((st.turnDeadline-Date.now())/1000))+"s";const vote=$("#object-vote-clock");if(vote&&st.voteDeadline)vote.textContent=Math.max(0,Math.ceil((st.voteDeadline-Date.now())/1000))+"s"},250)}
+function setupObjectImposter(){
+ baseStage("3+ players. One hidden imposter. Crew gets the object; everyone speaks for up to 20 seconds, then the whole room votes one player out each round. The imposter can guess at any time.");
+ $("#game-ui").innerHTML='<div class="object-panel" id="object-panel"><div class="prompt">🕵️ Object Imposter</div><p class="muted">Connecting to room…</p><button class="primary" id="object-start-wait" type="button">🎭 START GAME</button></div>';
+ S.objectState=null;S.objectPrivate=null;
+ const pending=$("#object-start-wait");if(pending)pending.onclick=()=>send({type:"objectAction",action:"start"});
+ send({type:"objectAction",action:"sync"});
+ gameInterval=setInterval(()=>{
+  if(activeGame!=="objectimposter")return;
+  const st=S.objectState;if(!st)return;
+  const clock=$("#object-clock");if(clock&&st.turnDeadline)clock.textContent=Math.max(0,Math.ceil((st.turnDeadline-Date.now())/1000))+"s";
+  const vote=$("#object-vote-clock");if(vote&&st.voteDeadline)vote.textContent=Math.max(0,Math.ceil((st.voteDeadline-Date.now())/1000))+"s";
+ },250);
+}
 function renderObjectImposter(){
  const ui=$("#object-panel");if(!ui)return;const st=S.objectState,priv=S.objectPrivate;
  if(!st){ui.innerHTML='<div class="prompt">🕵️ Object Imposter</div><p class="muted">Waiting for room state…</p>';return}
