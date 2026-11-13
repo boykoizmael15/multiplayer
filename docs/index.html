@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b18">
+<title>Party Arcade — Play Together</title>
+<style>
+:root{color-scheme:dark;--bg:#080b18;--panel:#11182b;--panel2:#151e34;--line:#26324c;--muted:#9ba9c5;--text:#f5f7ff;--cyan:#6ceaff;--violet:#a78bfa;--pink:#ff79c6;--green:#5ee6af}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1000px 650px at 80% -10%,#34205f66,transparent 60%),radial-gradient(900px 650px at -10% 40%,#053d5860,transparent 60%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,input,textarea{font:inherit}button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.shell{max-width:1440px;margin:auto;padding:24px clamp(14px,3vw,44px) 70px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:34px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:20px;letter-spacing:-.04em}
+.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#9d70ff,#30d8ef);box-shadow:0 8px 28px #6b5cff55;font-size:22px}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin-top:1px}
+
+.word-panel,.mind-panel{width:100%;max-width:680px;margin:0 auto;text-align:center}
+.word-chip{display:inline-block;padding:7px 11px;margin:3px;border:1px solid #ffffff20;border-radius:999px;background:#ffffff09;font-size:11px;color:#e4efff}
+.word-entry{display:flex;gap:8px;margin:16px auto;max-width:560px}
+.word-entry input{flex:1;min-width:0;padding:13px;border:1px solid #354461;border-radius:12px;background:#080f20;color:white}
+.word-entry button{padding:0 18px;border:0;border-radius:12px;background:linear-gradient(110deg,#8c74f4,#4dbfe1);color:#071322;font-weight:900}
+.word-clue{padding:18px;border:1px solid #ffffff1c;border-radius:16px;background:#ffffff08;font-size:18px;font-weight:800;margin:14px auto}
+.word-guesses{display:grid;gap:6px;text-align:left;max-height:150px;overflow:auto;margin:14px auto}
+.word-guess{padding:8px 11px;background:#ffffff08;border-radius:10px;font-size:11px;color:#bdc9df}
+.mind-answer{width:min(540px,100%);padding:14px;border:1px solid #455878;border-radius:12px;background:#080f20;color:white;font-size:15px;text-align:center}
+.three-shell{width:100%;max-width:800px;position:relative}
+.three-world{width:100%;height:min(57vh,520px);min-height:330px;border:1px solid #ffffff24;border-radius:17px;overflow:hidden;background:linear-gradient(#87b8d0,#d6c5a0)}
+.three-world canvas{width:100%;height:100%;display:block;touch-action:none}
+.three-hud{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.three-pill{padding:7px 11px;border:1px solid #ffffff23;border-radius:999px;background:#071528b8;color:#e6f6ff;font-size:11px;font-weight:800;backdrop-filter:blur(8px)}
+.three-message{font-size:11px;color:#b6c6dc;text-align:center;margin:8px 0}
+.three-load{padding:50px 18px;text-align:center;color:#d8e5ff}
+@media(max-width:540px){.word-entry{flex-direction:column}.word-entry button{padding:12px}.three-world{height:390px;min-height:300px}}
+
+.object-panel,.spelling-panel{width:100%;max-width:700px;margin:0 auto;text-align:center}.social-card{padding:15px;border:1px solid #ffffff1e;border-radius:15px;background:#ffffff08;margin:10px auto;text-align:left}.secret-word{font-size:clamp(25px,5vw,38px);font-weight:1000;color:#8ceaff;letter-spacing:.04em}.clue-feed{display:grid;gap:7px;max-height:210px;overflow:auto;margin:12px auto;text-align:left}.clue-line{padding:10px 12px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff12;font-size:12px;color:#dce8ff}.clue-line b{color:#99e5ff;margin-right:8px}.social-input{width:min(560px,100%);padding:13px;border-radius:12px;border:1px solid #4a5d80;background:#080f20;color:#fff}.social-form{display:flex;gap:8px;margin:14px auto;max-width:600px}.social-form input{flex:1;min-width:0}.narrator-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px auto}.spelling-sentence{font-size:15px;line-height:1.6;color:#d7e4ff;padding:14px;border-radius:13px;background:#ffffff08;margin:13px auto}.spelling-score{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:12px}@media(max-width:520px){.social-form{flex-direction:column}.social-form button{padding:12px}}
+.nav{display:flex;gap:8px;align-items:center}.nav button,.ghost{border:1px solid var(--line);background:#ffffff08;color:#dbe4ff;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700}
+.nav button:hover,.ghost:hover{border-color:#7588b9;background:#ffffff12}
+.profile{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:#ffffff08;font-size:12px;font-weight:800}
+.online-dot{width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 14px var(--green)}
+.hero{position:relative;overflow:hidden;padding:clamp(26px,5vw,58px);border:1px solid #ffffff1a;border-radius:30px;background:linear-gradient(115deg,#17152eec,#111d34eb);box-shadow:0 22px 70px #0003}
+.hero:after{content:"";position:absolute;width:320px;height:320px;border-radius:50%;right:6%;top:-150px;background:radial-gradient(circle,#8d5cff55,transparent 68%);pointer-events:none}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.4fr .7fr;align-items:center;gap:30px}
+.eyebrow{color:var(--cyan);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:900}
+h1{font-size:clamp(42px,7vw,76px);line-height:.96;letter-spacing:-.07em;margin:14px 0 18px}
+.gradient{background:linear-gradient(90deg,#bd9bff,#73eaff 70%);background-clip:text;color:transparent}
+.lead{max-width:640px;color:#b8c5df;font-size:16px;line-height:1.7;margin:0}
+.hero-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.stat{padding:11px 15px;border:1px solid #ffffff18;border-radius:14px;background:#ffffff08;color:#bdc9e2;font-size:12px}
+.stat b{color:white;font-size:16px;margin-right:5px}
+.hero-art{font-size:clamp(110px,18vw,190px);text-align:center;filter:drop-shadow(0 20px 35px #8e66ff50);animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px) rotate(3deg)}}
+.roombar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin:22px 0 34px;padding:15px;border:1px solid var(--line);border-radius:19px;background:#10172a}
+.roominfo{display:flex;align-items:center;gap:12px;min-width:0}
+.room-icon{width:42px;height:42px;border-radius:13px;background:#1d2b45;display:grid;place-items:center;font-size:20px}
+.room-info-text{min-width:0}.room-info-text b{display:block;font-size:13px}.room-info-text small{color:var(--muted);font-size:11px}
+.room-input{min-width:0;width:150px;border:1px solid var(--line);border-radius:11px;background:#090f20;color:white;padding:11px 12px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
+.primary{border:0;border-radius:12px;padding:12px 17px;background:linear-gradient(105deg,#986bff,#4abde9);color:#08101e;font-weight:900;font-size:13px;box-shadow:0 8px 22px #735aff30}
+.primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:30px 2px 15px}
+.section-head h2{font-size:24px;letter-spacing:-.04em;margin:0 0 5px}.section-head p{margin:0;color:var(--muted);font-size:12px}
+.filters{display:flex;flex-wrap:wrap;gap:7px}
+.filter{background:#ffffff08;border:1px solid var(--line);color:#aab8d3;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:800}
+.filter.active{background:#7962d52a;border-color:#9b83ff;color:#e9e2ff}
+.games{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.game-card{position:relative;min-height:205px;text-align:left;border:1px solid #ffffff18;background:linear-gradient(155deg,#17213a,#10172a);border-radius:21px;padding:16px;color:white;overflow:hidden;transition:.18s;display:flex;flex-direction:column}
+.game-card:hover{transform:translateY(-4px);border-color:#8471db;box-shadow:0 15px 35px #0004}
+.game-card:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.game-art{height:85px;border-radius:15px;display:grid;place-items:center;font-size:52px;margin-bottom:14px;background:radial-gradient(circle at 50% 30%,#667dff35,transparent 65%),#ffffff07}
+.game-card h3{font-size:15px;margin:0 0 5px}.game-card p{font-size:11px;color:#a9b7d1;line-height:1.5;margin:0}
+.game-meta{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:13px}
+.tag{font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:#91eaff;background:#39c8e51c;border:1px solid #39c8e530;padding:5px 8px;border-radius:999px}
+.playhint{font-size:10px;color:#c9baff;font-weight:900}
+.how{margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.how-card{border:1px solid var(--line);border-radius:17px;background:#ffffff06;padding:17px}
+.how-card b{display:block;font-size:13px;margin:8px 0 4px}.how-card p{color:var(--muted);font-size:11px;line-height:1.5;margin:0}.how-card span{font-size:24px}
+.footer{text-align:center;color:#64728f;font-size:11px;margin-top:34px}
+.overlay{position:fixed;inset:0;z-index:20;background:#030611dc;backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.show{display:flex}
+.modal{width:min(1060px,100%);max-height:94vh;overflow:auto;border:1px solid #ffffff20;border-radius:24px;background:#0e1527;box-shadow:0 30px 100px #0009}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#0e1527f2;backdrop-filter:blur(10px);z-index:2}
+.modal-head h2{font-size:18px;margin:0}.modal-head small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.close{border:1px solid var(--line);background:#ffffff09;color:white;width:36px;height:36px;border-radius:11px;font-size:18px}
+.modal-content{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:15px}
+.play-area{min-width:0}.stage{position:relative;border:1px solid #ffffff18;border-radius:18px;background:radial-gradient(ellipse at 50% 0%,#202f50,#0b1222 72%);padding:14px;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.stage canvas{display:block;width:100%;max-width:760px;height:auto;aspect-ratio:9/5;border-radius:12px;background:#0a1020;touch-action:none}
+.game-help{text-align:center;color:#aebbd6;font-size:12px;line-height:1.5;margin:12px auto 0;max-width:620px}
+.controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:13px}
+.ctrl{border:1px solid var(--line);border-radius:11px;background:#ffffff0b;color:#eaf0ff;padding:10px 13px;font-size:12px;font-weight:800}
+.ctrl:active{transform:scale(.97);background:#6a57b755}
+.sidebox{border:1px solid var(--line);border-radius:17px;padding:14px;background:#ffffff05;align-self:start}
+.sidebox h4{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#bac8e1;margin:0 0 12px}
+.player-list{display:grid;gap:8px}.player-row{display:flex;align-items:center;gap:8px;font-size:11px;padding:8px;border-radius:10px;background:#ffffff07}
+.avatar{width:24px;height:24px;border-radius:9px;display:grid;place-items:center;font-size:10px;color:#08101c;font-weight:1000}
+.score{margin-left:auto;color:var(--cyan);font-weight:900}
+.chat{margin-top:18px;border-top:1px solid var(--line);padding-top:13px}
+.chat-log{height:140px;overflow:auto;display:flex;flex-direction:column;gap:7px;margin-bottom:9px}
+.chat-msg{font-size:11px;color:#c2cde3;line-height:1.45;overflow-wrap:anywhere}.chat-msg b{color:#a7eaff}
+.chat-form{display:flex;gap:6px}.chat-form input{width:100%;min-width:0;background:#0a1020;border:1px solid var(--line);border-radius:9px;padding:9px;color:white;font-size:11px}.chat-form button{border:0;border-radius:9px;background:#7963df;color:white;padding:0 11px;font-weight:900}
+.game-ui{width:100%;max-width:760px}.big-action{border:1px solid #ffffff23;border-radius:18px;background:#ffffff09;color:white;padding:20px 28px;font-size:19px;font-weight:900;min-width:160px}
+.board{display:grid;gap:7px;margin:12px auto;max-width:440px}.board button{border:1px solid #ffffff1f;border-radius:12px;background:#1a2540;color:white;min-height:62px;font-size:26px;font-weight:900}.board button:hover{background:#2d3b61}
+.board.ttt{grid-template-columns:repeat(3,1fr);max-width:300px}.board.connect{grid-template-columns:repeat(7,1fr)}.board.connect button{min-height:44px;font-size:20px}.board.memory{grid-template-columns:repeat(4,1fr);max-width:360px}.board.memory button{min-height:68px;font-size:25px}
+.input-large{width:min(600px,100%);background:#080f1f;border:1px solid #364462;color:white;border-radius:12px;padding:13px;font-size:14px}
+.prompt{font-size:clamp(22px,4vw,36px);font-weight:900;letter-spacing:-.04em;text-align:center;margin:12px 0}
+.muted{color:var(--muted);font-size:11px;text-align:center;line-height:1.5}
+.kbd{display:inline-block;padding:3px 7px;border:1px solid #697796;border-radius:6px;background:#ffffff0d;color:white;font-size:10px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:50;background:#eaf8ff;color:#0b1426;border-radius:999px;padding:10px 16px;font-size:12px;font-weight:900;transition:.2s;box-shadow:0 8px 30px #0008}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.imposter-hud{width:100%;max-width:760px;margin-bottom:10px;display:grid;gap:8px}
+.imposter-role{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border:1px solid #ffffff1a;border-radius:12px;background:#ffffff08;font-size:12px}
+.imposter-role b{font-size:13px;color:#a8eaff}
+.imposter-votes{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.imposter-votes button{border:1px solid #586987;border-radius:10px;background:#1c2942;color:#fff;padding:9px 12px;font-size:11px;font-weight:800}
+.imposter-votes button:hover{border-color:#ff8fb8;background:#56324b}
+.social-vote{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:650px;margin:15px auto}
+.social-vote button{border:1px solid #ffffff22;background:#202b48;color:#fff;border-radius:15px;padding:16px 12px;font-weight:900}
+.social-vote button:hover{border-color:#8fcfff;background:#2a3a60}
+
+@media(max-width:1050px){.games{grid-template-columns:repeat(3,minmax(0,1fr))}.hero-grid{grid-template-columns:1fr .45fr}}
+@media(max-width:720px){.shell{padding-top:15px}.nav{display:none}.hero-grid{grid-template-columns:1fr}.hero-art{display:none}.roombar{grid-template-columns:1fr 1fr}.roominfo{grid-column:1/-1}.room-input{width:100%}.games{grid-template-columns:repeat(2,minmax(0,1fr))}.modal-content{grid-template-columns:1fr}.sidebox{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sidebox h4{grid-column:1/-1}.chat{margin:0;border:0;padding:0}.chat-log{height:95px}.how{grid-template-columns:1fr}}
+@media(max-width:420px){.games{grid-template-columns:1fr}.game-card{min-height:185px}.roombar{grid-template-columns:1fr}.roominfo{grid-column:auto}.profile{font-size:10px}.stat{flex:1}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="brand"><div class="logo">🎮</div><div>PARTY ARCADE<small>the hangout playground</small></div></div>
+    <nav class="nav"><button id="nav-games">🎲 Games</button><button id="nav-room">👥 Your room</button><button id="nav-how">✨ How to play</button></nav>
+    <div class="profile"><i class="online-dot"></i><span id="top-player">Player</span></div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">✦ A little chaos is good for you</div>
+        <h1>Play more.<br><span class="gradient">Laugh louder.</span></h1>
+        <p class="lead">A mini-game universe for your crew. Draw weird masterpieces, race through neon worlds, outsmart your friends, and start a new rematch in seconds.</p>
+        <div class="hero-stats"><div class="stat"><b>18+</b> mini-games</div><div class="stat"><b>2D</b> arcade action</div><div class="stat"><b>∞</b> rematches</div></div>
+      </div>
+      <div class="hero-art">🕹️</div>
+    </div>
+  </section>
+
+  <section class="roombar" id="room-section">
+    <div class="roominfo"><div class="room-icon">🌐</div><div class="room-info-text"><b id="room-label">Public lobby · 0/16</b><small id="connection-label">Live multiplayer · up to 16 players per room</small></div></div>
+    <input id="room-code" class="room-input" maxlength="10" placeholder="ROOM CODE" aria-label="Room code">
+    <button class="primary" id="join-room">Join room ↗</button>
+    <button class="ghost" id="create-room">＋ Create private room</button>
+    <button class="ghost" id="copy-room">Copy invite link</button>
+  </section>
+
+  <section id="games-section">
+    <div class="section-head">
+      <div><div class="eyebrow">Choose your chaos</div><h2>Game library</h2><p>Every tile opens a playable mini-game. Bring a friend into your room for the shared fun.</p></div>
+      <div class="filters"><button class="filter active" data-filter="All">All games</button><button class="filter" data-filter="Action">Action</button><button class="filter" data-filter="Party">Party</button><button class="filter" data-filter="Puzzle">Puzzle</button><button class="filter" data-filter="Creative">Creative</button></div>
+    </div>
+    <div class="games" id="games-grid"></div>
+  </section>
+
+  <section id="how-section">
+    <div class="section-head"><div><div class="eyebrow">Easy as 1, 2, play</div><h2>Make it a party</h2><p>Three steps from “I'm bored” to “ONE MORE ROUND”.</p></div></div>
+    <div class="how">
+      <div class="how-card"><span>🔗</span><b>1. Share a room</b><p>Create a private room and copy its link, or stay in the public lobby. Friends joining the same code appear in your live player list.</p></div>
+      <div class="how-card"><span>🕹️</span><b>2. Pick a game</b><p>Open any game card. Use your keyboard, mouse, or the on-screen controls. Each game explains how to play.</p></div>
+      <div class="how-card"><span>🏆</span><b>3. Chase the win</b><p>Play, chat, compare scores, and immediately jump into another game. No account required.</p></div>
+    </div>
+  </section>
+  <div class="footer">PARTY ARCADE ✦ made for friends, built for fun · Be nice, play fair.</div>
+</div>
+
+<div class="overlay" id="game-overlay" role="dialog" aria-modal="true" aria-labelledby="game-title">
+  <div class="modal">
+    <div class="modal-head"><div><h2 id="game-title">Game</h2><small id="game-subtitle">Ready?</small></div><button class="close" id="close-game" aria-label="Close game">×</button></div>
+    <div class="modal-content">
+      <div class="play-area"><div class="stage" id="stage"></div></div>
+      <aside class="sidebox">
+        <h4>👥 Room players</h4><div id="player-list" class="player-list"></div>
+        <div class="chat"><h4>💬 Live chat</h4><div class="chat-log" id="chat-log"></div><form class="chat-form" id="chat-form"><input id="chat-input" maxlength="180" placeholder="Say something nice…" autocomplete="off"><button>➤</button></form></div>
+      </aside>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+function createRoomEngine(){
+const rooms=new Map();
+const COLORS = ["#78e8ff","#ff83c7","#b9a0ff","#ffe078","#75e5a5","#ff9b76"];
+const IMPOSTER_TASKS = [
+  { id: "reactor", name: "Reactor", x: 145, y: 125 },
+  { id: "comms", name: "Communications", x: 450, y: 115 },
+  { id: "engines", name: "Engines", x: 755, y: 365 }
+];
+const MAX_ROOM_PLAYERS = 16;
+function getRoom(code) {
+  if (!rooms.has(code)) rooms.set(code, { code, players: new Map(), connections: new Map(), imposter: null, wordGame: null, mindGame: null, objectGame: null, spellingGame: null });
+  return rooms.get(code);
+}
+function sendTo(room, id, message) {
+  const ws = room.connections.get(id);
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify(message));
+}
+function notifyRoom(code, text) {
+  serverRef.publish(code, JSON.stringify({ type: "imposterNotice", text }));
+}
+function imposterState(room) {
+  const game = room.imposter;
+  if (!game) return null;
+  const crewCount = Array.from(game.roles.values()).filter(role => role === "crew").length;
+  let tasksDone = 0;
+  for (const done of game.tasks.values()) tasksDone += done.size;
+  const tasksTotal = crewCount * IMPOSTER_TASKS.length;
+  const activePlayers = Array.from(room.players.values()).map(p => ({
+    id: p.id, name: p.name, color: p.color, x: p.x, y: p.y,
+    alive: p.alive !== false, spectator: game.roles.get(p.id) === "spectator",
+    tasksDone: game.tasks.has(p.id) ? game.tasks.get(p.id).size : 0
+  }));
+  return {
+    phase: game.phase, round: game.round, players: activePlayers,
+    bodies: game.bodies.map(b => ({ x: b.x, y: b.y, name: b.name })),
+    tasksDone, tasksTotal, votesCast: game.votes.size,
+    winner: game.winner, lastEjected: game.lastEjected || "",
+    deadline: game.deadline || null
+  };
+}
+function publishImposter(code) {
+  const room = rooms.get(code);
+  if (!room || !room.imposter) return;
+  serverRef.publish(code, JSON.stringify({ type: "imposterState", state: imposterState(room) }));
+}
+function sendImposterPrivate(room, id) {
+  const game = room.imposter;
+  if (!game) return;
+  const role = game.roles.get(id) || "spectator";
+  sendTo(room, id, {
+    type: "imposterPrivate", role,
+    completed: Array.from(game.tasks.get(id) || []),
+    round: game.round
+  });
+}
+function finishImposter(room, winner, text) {
+  const game = room.imposter;
+  if (!game) return;
+  if (game.meetingTimer) clearTimeout(game.meetingTimer);
+  game.meetingTimer = null;
+  game.phase = "ended";
+  game.winner = winner;
+  game.deadline = null;
+  game.lastEjected = text || "";
+  publishImposter(room.code);
+  notifyRoom(room.code, text || (winner === "crew" ? "Crew wins!" : "Imposters win!"));
+}
+function checkImposterWin(room) {
+  const game = room.imposter;
+  if (!game || game.phase === "ended" || game.phase === "lobby") return;
+  const aliveCrew = Array.from(game.roles.entries()).filter(([id, role]) => role === "crew" && room.players.has(id) && room.players.get(id).alive !== false).length;
+  const aliveImposters = Array.from(game.roles.entries()).filter(([id, role]) => role === "imposter" && room.players.has(id) && room.players.get(id).alive !== false).length;
+  let tasksDone = 0;
+  for (const done of game.tasks.values()) tasksDone += done.size;
+  const crewCount = Array.from(game.roles.values()).filter(role => role === "crew").length;
+  if (tasksDone >= crewCount * IMPOSTER_TASKS.length && crewCount > 0) finishImposter(room, "crew", "Crew completed every task!");
+  else if (aliveImposters === 0) finishImposter(room, "crew", "All imposters were caught!");
+  else if (aliveCrew <= aliveImposters) finishImposter(room, "imposters", "The imposters outnumber the remaining crew!");
+}
+function beginMeeting(room, text) {
+  const game = room.imposter;
+  if (!game || game.phase !== "active") return;
+  game.phase = "discussion";
+  game.votes = new Map();
+  game.deadline = Date.now() + 25000;
+  if (game.meetingTimer) clearTimeout(game.meetingTimer);
+  const code = room.code;
+  const round = game.round;
+  game.meetingTimer = setTimeout(() => resolveMeeting(code, round), 25000);
+  publishImposter(code);
+  notifyRoom(code, text || "Emergency meeting! Discuss, then vote.");
+}
+function resolveMeeting(code, round) {
+  const room = rooms.get(code);
+  if (!room || !room.imposter || room.imposter.round !== round || room.imposter.phase !== "discussion") return;
+  const game = room.imposter;
+  if (game.meetingTimer) clearTimeout(game.meetingTimer);
+  game.meetingTimer = null;
+  const counts = new Map();
+  for (const target of game.votes.values()) counts.set(target, (counts.get(target) || 0) + 1);
+  const entries = Array.from(counts.entries()).sort((a,b) => b[1] - a[1]);
+  let ejected = null;
+  if (entries.length && entries[0][0] !== "skip" && (entries.length === 1 || entries[0][1] > entries[1][1])) {
+    const target = entries[0][0];
+    const player = room.players.get(target);
+    if (player && player.alive !== false) {
+      player.alive = false;
+      const wasImposter = game.roles.get(target) === "imposter";
+      ejected = player.name + (wasImposter ? " was an imposter." : " was not an imposter.");
+      game.lastEjected = ejected;
+    }
+  } else {
+    game.lastEjected = "No one was ejected.";
+  }
+  game.phase = "active";
+  game.deadline = null;
+  game.votes.clear();
+  checkImposterWin(room);
+  if (game.phase !== "ended") publishImposter(code);
+  notifyRoom(code, game.lastEjected || "Back to the ship!");
+}
+function startImposter(room, code) {
+  const list = Array.from(room.players.values());
+  if (list.length < 4) {
+    const ws = room.connections.get(code);
+    if (ws) ws.send(JSON.stringify({ type: "imposterNotice", text: "You need at least 4 players to start. Invite the crew!" }));
+    return;
+  }
+  const game = room.imposter || { round: 0 };
+  if (game.meetingTimer) clearTimeout(game.meetingTimer);
+  const round = (game.round || 0) + 1;
+  const shuffled = list.slice().sort(() => Math.random() - 0.5);
+  const impostersCount = list.length >= 12 ? 3 : list.length >= 8 ? 2 : 1;
+  const roles = new Map();
+  const tasks = new Map();
+  const bodies = [];
+  shuffled.forEach((p, index) => {
+    const role = index < impostersCount ? "imposter" : "crew";
+    roles.set(p.id, role);
+    tasks.set(p.id, new Set());
+    p.alive = true;
+    p.x = 395 + (index % 4) * 36;
+    p.y = 220 + Math.floor(index / 4) * 32;
+    p.lastMoveAt = 0;
+  });
+  room.imposter = {
+    phase: "active", round, roles, tasks, bodies, votes: new Map(),
+    winner: null, lastEjected: "", emergencyUsed: false,
+    killAt: new Map(), meetingTimer: null, deadline: null
+  };
+  for (const p of list) {
+    const ws = room.connections.get(p.id);
+    if (ws) ws.send(JSON.stringify({
+      type: "imposterPrivate", role: roles.get(p.id),
+      completed: [], round
+    }));
+  }
+  publishImposter(code);
+  notifyRoom(code, "Round " + round + " started! Roles are secret. Go!");
+}
+
+const WORD_BANK=[
+ {word:"waterfall",category:"Nature",clue:"A river takes a dramatic vertical leap."},{word:"telescope",category:"Science",clue:"A tool that brings faraway things closer."},{word:"popcorn",category:"Food",clue:"A movie-night snack that starts as a tiny kernel."},{word:"lighthouse",category:"Places",clue:"A tall coastal guide that shines through the dark."},{word:"volcano",category:"Nature",clue:"A mountain that sometimes has a very fiery temper."},{word:"backpack",category:"Everyday things",clue:"You carry it on your shoulders when you go exploring."},{word:"penguin",category:"Animals",clue:"A tuxedo-wearing bird that is not built for flying."},{word:"rollercoaster",category:"Fun",clue:"A track-based ride full of drops, loops and screams."},{word:"pineapple",category:"Food",clue:"A tropical fruit with a spiky crown."},{word:"keyboard",category:"Everyday things",clue:"A set of keys used to tell a computer what to do."},{word:"astronaut",category:"People",clue:"A job that can include floating around in orbit."},{word:"snowflake",category:"Nature",clue:"A tiny icy crystal with a famously unique shape."},{word:"treasure",category:"Adventure",clue:"Something valuable pirates might hide."},{word:"chameleon",category:"Animals",clue:"A lizard famous for changing its colors."},{word:"sandwich",category:"Food",clue:"A meal with filling held between slices."},{word:"fireworks",category:"Celebrations",clue:"Colorful sparks that burst in the night sky."}
+];
+const MIND_PROMPTS=["Name a food almost everyone likes.","What is the first thing you pack for a beach day?","Name an animal you would not want in your bedroom.","What is the best late-night snack?","Name a color that feels like summer.","What is something people always lose?","Name a thing you would take to a deserted island.","What is the first word you think of when you hear SPACE?","Name a popular pizza topping.","What is the best superpower for everyday life?","Name something that makes a room instantly better.","What is the most underrated breakfast food?","Name an object you would use in a pillow fort.","What is the first thing you would do with a million dollars?"];
+function wordGamePublic(room){const g=room.wordGame;if(!g)return{phase:"lobby",round:0,scores:[],recentGuesses:[],guessCount:0};return{phase:g.phase,round:g.round,category:g.category,clue:g.clue,mask:g.phase==="ended"?g.answer:"_ ".repeat(g.answer.length).trim(),answer:g.phase==="ended"?g.answer:null,winner:g.winner,deadline:g.deadline||null,guessCount:g.guessCount,recentGuesses:g.recentGuesses.slice(-9),scores:Array.from(g.scores.entries()).map(([id,score])=>({id,name:(room.players.get(id)||{}).name||"Player",score})).sort((a,b)=>b.score-a.score)}}
+function publishWordGame(room){serverRef.publish(room.code,JSON.stringify({type:"wordState",state:wordGamePublic(room)}))}
+function startWordGame(room){if(room.players.size<2){notifyRoom(room.code,"Guess the Word needs at least 2 players. Invite a friend!");return}const old=room.wordGame;if(old&&old.timer)clearTimeout(old.timer);const item=WORD_BANK[Math.floor(Math.random()*WORD_BANK.length)],g={phase:"active",round:(old&&old.round||0)+1,answer:item.word,category:item.category,clue:item.clue,scores:old&&old.scores?old.scores:new Map(),guessCount:0,recentGuesses:[],winner:null,deadline:Date.now()+60000,timer:null};room.wordGame=g;g.timer=setTimeout(()=>{if(room.wordGame!==g||g.phase!=="active")return;g.phase="ended";g.winner=null;publishWordGame(room);notifyRoom(room.code,"Time! The word was "+g.answer+".")},60000);publishWordGame(room);notifyRoom(room.code,"🔤 New word challenge! First correct guess wins 3 points.")}
+function mindGamePublic(room){const g=room.mindGame;if(!g)return{phase:"lobby",round:0,scores:[],responsesCount:0,playerCount:room.players.size};const answers=g.phase==="reveal"?Array.from(g.responses.entries()).map(([id,r])=>({id,name:r.name,answer:r.answer,points:r.points||0})):null;return{phase:g.phase,round:g.round,prompt:g.prompt,deadline:g.deadline||null,responsesCount:g.responses.size,playerCount:g.playerCount,answers,scores:Array.from(g.scores.entries()).map(([id,score])=>({id,name:(room.players.get(id)||{}).name||"Player",score})).sort((a,b)=>b.score-a.score)}}
+function publishMindGame(room){serverRef.publish(room.code,JSON.stringify({type:"mindState",state:mindGamePublic(room)}))}
+function resolveMindGame(room,round){const g=room.mindGame;if(!g||g.round!==round||g.phase!=="answering")return;if(g.timer)clearTimeout(g.timer);g.timer=null;g.phase="reveal";const counts=new Map();for(const r of g.responses.values())counts.set(r.normalized,(counts.get(r.normalized)||0)+1);for(const [id,r] of g.responses.entries()){const count=counts.get(r.normalized)||0;r.points=count>1?count:0;if(r.points)g.scores.set(id,(g.scores.get(id)||0)+r.points)}publishMindGame(room);notifyRoom(room.code,"🧠 Reveal time! Matching answers earn points for everyone who matched.")}
+function startMindGame(room){if(room.players.size<2){notifyRoom(room.code,"Mind Meld needs at least 2 players.");return}const old=room.mindGame;if(old&&old.timer)clearTimeout(old.timer);const g={phase:"answering",round:(old&&old.round||0)+1,prompt:MIND_PROMPTS[Math.floor(Math.random()*MIND_PROMPTS.length)],responses:new Map(),scores:old&&old.scores?old.scores:new Map(),playerCount:room.players.size,deadline:Date.now()+35000,timer:null};room.mindGame=g;g.timer=setTimeout(()=>resolveMindGame(room,g.round),35000);for(const id of room.players.keys())sendTo(room,id,{type:"mindPrivate",submitted:false});publishMindGame(room);notifyRoom(room.code,"🧠 New Mind Meld! Answer secretly, then compare.")}
+
+
+const OBJECT_ITEMS=["umbrella","toothbrush","backpack","telescope","bicycle","snowman","microwave","sunglasses","watermelon","lighthouse","skateboard","pineapple","keychain","flashlight","headphones","spaceship","sandwich","volcano","camera","snowflake","rollercoaster","compass","cactus","teapot","binoculars","suitcase","lantern","hairbrush","pillow","alarm clock"];
+const SPELLING_WORDS=[
+{word:"adventure",sentence:"The hikers planned an adventure through the forest."},{word:"brilliant",sentence:"Maya had a brilliant idea for the science project."},{word:"calendar",sentence:"Circle the date on the calendar so you do not forget."},{word:"curious",sentence:"The curious kitten explored every corner of the room."},{word:"enormous",sentence:"An enormous whale appeared beside the boat."},{word:"favorite",sentence:"Blue is my favorite color for a summer jacket."},{word:"generous",sentence:"Our generous neighbor shared fresh apples with everyone."},{word:"hibernate",sentence:"Some animals hibernate during the coldest part of winter."},{word:"imagine",sentence:"Close your eyes and imagine a castle in the clouds."},{word:"journey",sentence:"Their journey across the country took three days."},{word:"knowledge",sentence:"Reading books is one way to build knowledge."},{word:"lightning",sentence:"A flash of lightning lit up the evening sky."},{word:"mystery",sentence:"The missing footprints made the story a mystery."},{word:"necessary",sentence:"A warm coat is necessary on a freezing morning."},{word:"ordinary",sentence:"An ordinary walk turned into an exciting discovery."},{word:"rhythm",sentence:"The drummer kept a steady rhythm for the band."},{word:"separate",sentence:"Please separate the red blocks from the blue ones."},{word:"tomorrow",sentence:"We will finish building the model tomorrow."},{word:"whisper",sentence:"Please whisper while the baby is sleeping."},{word:"beautiful",sentence:"The garden looked beautiful after the rain."},{word:"chocolate",sentence:"She sprinkled chocolate chips on the pancakes."},{word:"destination",sentence:"The map showed our final destination by the lake."},{word:"excellent",sentence:"The team did an excellent job on the puzzle."},{word:"library",sentence:"We borrowed a book from the library."},{word:"mischievous",sentence:"The mischievous puppy hid one of my shoes."},{word:"temperature",sentence:"The temperature dropped when the sun went down."},{word:"vegetable",sentence:"Carrots are a crunchy orange vegetable."},{word:"waterfall",sentence:"We could hear the waterfall before we saw it."},{word:"achievement",sentence:"Finishing the marathon was a huge achievement."},{word:"disappear",sentence:"The rainbow seemed to disappear behind the clouds."}
+];
+function objectGamePublic(room){const g=room.objectGame;if(!g)return{phase:"lobby",round:0,clues:[],submittedCount:0,crewCount:0,guessesRemaining:2};const clues=Array.from(g.clues.entries()).map(([id,clue])=>({id,name:(room.players.get(id)||{}).name||"Player",clue}));const o={phase:g.phase,round:g.round,clues,submittedCount:g.clues.size,crewCount:Array.from(g.roles.values()).filter(x=>x==="crew").length,guessesRemaining:g.guessesRemaining,deadline:g.deadline||null,winner:g.winner||null,message:g.message||""};if(g.phase==="ended"){o.answer=g.answer;o.roles=Array.from(g.roles.entries()).map(([id,role])=>({id,name:(room.players.get(id)||{}).name||"Left player",role}))}return o}
+function publishObjectGame(room){serverRef.publish(room.code,JSON.stringify({type:"objectState",state:objectGamePublic(room)}))}
+function sendObjectPrivate(room,id){const g=room.objectGame;if(g)sendTo(room,id,{type:"objectPrivate",role:g.roles.get(id)||"spectator",objectWord:g.roles.get(id)==="crew"?g.answer:null,round:g.round})}
+function finishObjectGame(room,winner,message){const g=room.objectGame;if(!g||g.phase==="ended")return;if(g.timer)clearTimeout(g.timer);g.timer=null;g.phase="ended";g.winner=winner;g.message=message;g.deadline=null;publishObjectGame(room);notifyRoom(room.code,message)}
+function beginObjectGuess(room,round){const g=room.objectGame;if(!g||g.round!==round||g.phase!=="clues")return;if(g.timer)clearTimeout(g.timer);if(!g.roles.has(g.imposterId)){finishObjectGame(room,"crew","The imposter left. Crewmates win!");return}g.phase="guessing";g.guessesRemaining=2;g.deadline=Date.now()+40000;g.timer=setTimeout(()=>{if(room.objectGame&&room.objectGame.round===round&&room.objectGame.phase==="guessing")finishObjectGame(room,"crew","The imposter ran out of time. Crewmates win!")},40000);publishObjectGame(room);notifyRoom(room.code,"🕵️ Clues are in. The imposter gets two guesses!")}
+function maybeAdvanceObject(room){const g=room.objectGame;if(!g||g.phase!=="clues")return;const crew=Array.from(g.roles.entries()).filter(([id,r])=>r==="crew"&&room.players.has(id)).map(([id])=>id);if(crew.length&&crew.every(id=>g.clues.has(id)))beginObjectGuess(room,g.round)}
+function startObjectGame(room){const list=Array.from(room.players.values());if(list.length<3){notifyRoom(room.code,"Object Imposter needs at least 3 players. Invite two friends!");return}if(room.objectGame&&room.objectGame.phase!=="lobby"&&room.objectGame.phase!=="ended"){notifyRoom(room.code,"An Object Imposter round is already running.");return}if(room.objectGame&&room.objectGame.timer)clearTimeout(room.objectGame.timer);const imp=list[Math.floor(Math.random()*list.length)],answer=OBJECT_ITEMS[Math.floor(Math.random()*OBJECT_ITEMS.length)],roles=new Map();list.forEach(p=>roles.set(p.id,p.id===imp.id?"imposter":"crew"));const old=room.objectGame,g={phase:"clues",round:(old&&old.round||0)+1,answer,roles,imposterId:imp.id,clues:new Map(),guessesRemaining:2,deadline:Date.now()+75000,timer:null,winner:null,message:""};room.objectGame=g;for(const p of list)sendObjectPrivate(room,p.id);g.timer=setTimeout(()=>beginObjectGuess(room,g.round),75000);publishObjectGame(room);notifyRoom(room.code,"🕵️ Object Imposter started! Crewmates: describe the secret object without naming it.")}
+function spellingGamePublic(room){const g=room.spellingGame;if(!g)return{phase:"lobby",round:0,scores:[],submittedCount:0,playerCount:0,results:[]};const o={phase:g.phase,round:g.round,deadline:g.deadline||null,submittedCount:g.responses.size,playerCount:g.roster.size,scores:Array.from(g.scores.entries()).map(([id,score])=>({id,name:(room.players.get(id)||{}).name||"Player",score})).sort((a,b)=>b.score-a.score)};if(g.phase==="ended"){o.answer=g.word;o.results=Array.from(g.roster).map(id=>{const r=g.responses.get(id);return{name:(room.players.get(id)||{}).name||g.names.get(id)||"Player",spelling:r?r.spelling:"",correct:!!(r&&r.correct)}})}return o}
+function publishSpellingGame(room){serverRef.publish(room.code,JSON.stringify({type:"spellingState",state:spellingGamePublic(room)}))}
+function sendSpellingPrivate(room,id){const g=room.spellingGame;if(g&&g.phase==="active"){const r=g.responses.get(id);sendTo(room,id,{type:"spellingPrivate",round:g.round,word:g.word,sentence:g.sentence,submitted:!!r})}}
+function cleanSpelling(s){return String(s||"").toLowerCase().replace(/[^a-z]/g,"")}
+function resolveSpellingGame(room,round){const g=room.spellingGame;if(!g||g.round!==round||g.phase!=="active")return;if(g.timer)clearTimeout(g.timer);g.timer=null;g.phase="ended";for(const [id,r] of g.responses){r.correct=cleanSpelling(r.spelling)===cleanSpelling(g.word);if(r.correct)g.scores.set(id,(g.scores.get(id)||0)+1)}publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee answer: "+g.word+". Round complete!")}
+function startSpellingGame(room){const ids=Array.from(room.players.keys());if(ids.length<2){notifyRoom(room.code,"Spelling Bee needs at least 2 players.");return}if(room.spellingGame&&room.spellingGame.timer)clearTimeout(room.spellingGame.timer);const item=SPELLING_WORDS[Math.floor(Math.random()*SPELLING_WORDS.length)],old=room.spellingGame,g={phase:"active",round:(old&&old.round||0)+1,word:item.word,sentence:item.sentence,roster:new Set(ids),names:new Map(Array.from(room.players.entries()).map(([id,p])=>[id,p.name])),responses:new Map(),scores:old&&old.scores?old.scores:new Map(),deadline:Date.now()+65000,timer:null};room.spellingGame=g;for(const id of ids)sendSpellingPrivate(room,id);g.timer=setTimeout(()=>resolveSpellingGame(room,g.round),65000);publishSpellingGame(room);notifyRoom(room.code,"🐝 Spelling Bee! Listen to the voice narrator and spell the word.")}
+
+
+const serverRef={publish(code,payload){const room=rooms.get(code);if(!room)return;for(const ws of room.connections.values()){if(ws.readyState===1){try{ws.send(payload)}catch{}}}}};
+const websocket={
+    open(ws) {
+      const room = getRoom(ws.data.room);
+      const p = { id: ws.data.id, name: ws.data.name, color: ws.data.color, x: 450, y: 250, alive: true };
+      room.players.set(ws.data.id, p);
+      room.connections.set(ws.data.id, ws);
+      ws.subscribe(ws.data.room);
+      ws.send(JSON.stringify({ type: "snapshot", selfId: ws.data.id, players: Array.from(room.players.values()) }));
+      if (room.imposter && room.imposter.phase === "active" || room.imposter && room.imposter.phase === "discussion") {
+        room.imposter.roles.set(ws.data.id, "spectator");
+        p.alive = false;
+        room.imposter.tasks.set(ws.data.id, new Set());
+        sendImposterPrivate(room, ws.data.id);
+        publishImposter(ws.data.room);
+      } else if (room.imposter) {
+        room.imposter.roles.set(ws.data.id, "spectator");
+        sendImposterPrivate(room, ws.data.id);
+        publishImposter(ws.data.room);
+      }
+      serverRef.publish(ws.data.room, JSON.stringify({ type: "players", players: Array.from(room.players.values()) }));
+    },
+    message(ws, raw) {
+      let msg;
+      try { msg = JSON.parse(String(raw)); } catch { return; }
+      const room = getRoom(ws.data.room);
+      const player = room.players.get(ws.data.id);
+      if (!player) return;
+      if (msg.type === "chat") {
+        const text = String(msg.text || "").slice(0, 180).trim();
+        if (!text) return;
+        serverRef.publish(ws.data.room, JSON.stringify({ type: "chat", name: player.name, color: player.color, text }));
+        return;
+      }
+      if (msg.type === "gameEvent") {
+        const event = msg.event || {};
+        const payload = JSON.stringify({ type: "gameEvent", gameId: String(msg.gameId || "").slice(0, 24), event, player });
+        serverRef.publish(ws.data.room, payload);
+        return;
+      }
+
+      if (msg.type === "wordAction") {
+        const action=String(msg.action||"");
+        if(action==="sync"){ws.send(JSON.stringify({type:"wordState",state:wordGamePublic(room)}));return}
+        if(action==="start"){startWordGame(room);return}
+        if(action==="guess"&&room.wordGame&&room.wordGame.phase==="active"){
+          const guess=String(msg.guess||"").toLowerCase().replace(/[^a-z]/g,"").slice(0,32);if(!guess)return;
+          const g=room.wordGame;g.guessCount++;const correct=guess===g.answer.toLowerCase();g.recentGuesses.push({name:player.name,text:guess,correct});
+          if(correct){if(g.timer)clearTimeout(g.timer);g.phase="ended";g.winner=player.name;g.scores.set(player.id,(g.scores.get(player.id)||0)+3);publishWordGame(room);notifyRoom(ws.data.room,player.name+" guessed the word! +3 points 🎉")}
+          else{g.recentGuesses=g.recentGuesses.slice(-20);publishWordGame(room)}
+          return;
+        }
+        return;
+      }
+      if (msg.type === "mindAction") {
+        const action=String(msg.action||"");
+        if(action==="sync"){ws.send(JSON.stringify({type:"mindState",state:mindGamePublic(room)}));ws.send(JSON.stringify({type:"mindPrivate",submitted:!!(room.mindGame&&room.mindGame.responses.has(player.id))}));return}
+        if(action==="start"){startMindGame(room);return}
+        if(action==="submit"&&room.mindGame&&room.mindGame.phase==="answering"){
+          const g=room.mindGame;if(g.responses.has(player.id))return;
+          const answer=String(msg.answer||"").trim().replace(/\s+/g," ").slice(0,40);if(!answer)return;
+          g.responses.set(player.id,{name:player.name,answer,normalized:answer.toLowerCase().replace(/[^a-z0-9]/g,""),points:0});
+          sendTo(room,player.id,{type:"mindPrivate",submitted:true});
+          const activeIds=Array.from(room.players.keys()).filter(id=>room.connections.has(id));
+          if(activeIds.every(id=>g.responses.has(id)))resolveMindGame(room,g.round);else publishMindGame(room);
+          return;
+        }
+        return;
+      }
+
+
+      if (msg.type === "objectAction") {
+        const action=String(msg.action||"");
+        if(action==="sync"){if(!room.objectGame)room.objectGame={phase:"lobby",round:0,roles:new Map(),clues:new Map(),timer:null,guessesRemaining:2};const g=room.objectGame;if(g.phase!=="lobby"&&g.phase!=="ended"&&!g.roles.has(player.id))g.roles.set(player.id,"spectator");sendObjectPrivate(room,player.id);ws.send(JSON.stringify({type:"objectState",state:objectGamePublic(room)}));return}
+        if(action==="start"){startObjectGame(room);return}
+        const g=room.objectGame;if(!g)return;const role=g.roles.get(player.id);
+        if(action==="clue"&&g.phase==="clues"&&role==="crew"&&!g.clues.has(player.id)){
+          const clue=String(msg.clue||"").trim().replace(/\s+/g," ").slice(0,90);if(clue.length<3){ws.send(JSON.stringify({type:"imposterNotice",text:"Give a slightly longer clue."}));return}
+          const norm=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");if(norm(clue).includes(norm(g.answer))){ws.send(JSON.stringify({type:"imposterNotice",text:"Your clue says the secret object. Describe it without naming it!"}));return}
+          g.clues.set(player.id,clue);publishObjectGame(room);maybeAdvanceObject(room);return;
+        }
+        if(action==="guess"&&g.phase==="guessing"&&role==="imposter"){const guess=String(msg.guess||"").trim().slice(0,50);if(!guess)return;const norm=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");if(norm(guess)===norm(g.answer))finishObjectGame(room,"imposter",player.name+" guessed the secret object! Imposter wins!");else{g.guessesRemaining--;if(g.guessesRemaining<=0)finishObjectGame(room,"crew","The imposter used both guesses. Crewmates win!");else{publishObjectGame(room);notifyRoom(room.code,"Not quite! The imposter has one guess left.")}}return}
+        return;
+      }
+      if (msg.type === "spellingAction") {
+        const action=String(msg.action||"");
+        if(action==="sync"){if(!room.spellingGame)room.spellingGame={phase:"lobby",round:0,scores:new Map(),roster:new Set(),responses:new Map(),names:new Map(),timer:null};const g=room.spellingGame;if(g.phase==="active"&&!g.roster.has(player.id)){g.roster.add(player.id);g.names.set(player.id,player.name)}ws.send(JSON.stringify({type:"spellingState",state:spellingGamePublic(room)}));sendSpellingPrivate(room,player.id);return}
+        if(action==="start"){startSpellingGame(room);return}
+        const g=room.spellingGame;if(action==="submit"&&g&&g.phase==="active"&&g.roster.has(player.id)&&!g.responses.has(player.id)){const spelling=String(msg.spelling||"").trim().slice(0,48);if(!spelling)return;g.responses.set(player.id,{spelling,correct:false});const active=Array.from(g.roster).filter(id=>room.connections.has(id));if(active.every(id=>g.responses.has(id)))resolveSpellingGame(room,g.round);else publishSpellingGame(room);return}
+        return;
+      }
+
+      if (msg.type !== "imposterAction") return;
+      const game = room.imposter;
+      const action = String(msg.action || "");
+      if (action === "sync") {
+        if (!room.imposter) {
+          room.imposter = {
+            phase: "lobby", round: 0, roles: new Map(), tasks: new Map(),
+            bodies: [], votes: new Map(), winner: null, lastEjected: "",
+            emergencyUsed: false, killAt: new Map(), meetingTimer: null, deadline: null
+          };
+        }
+        const lobby = room.imposter;
+        if (!lobby.roles.has(ws.data.id)) lobby.roles.set(ws.data.id, "spectator");
+        if (!lobby.tasks.has(ws.data.id)) lobby.tasks.set(ws.data.id, new Set());
+        sendImposterPrivate(room, ws.data.id);
+        ws.send(JSON.stringify({ type: "imposterState", state: imposterState(room) }));
+        return;
+      }
+      if (action === "start") {
+        startImposter(room, ws.data.room);
+        return;
+      }
+      if (!game) return;
+      const role = game.roles.get(ws.data.id);
+      if (action === "move" && game.phase === "active" && role && role !== "spectator" && player.alive !== false) {
+        const now = Date.now();
+        if (now - (player.lastMoveAt || 0) < 65) return;
+        player.lastMoveAt = now;
+        player.x = Math.max(35, Math.min(865, Number(msg.x) || player.x));
+        player.y = Math.max(40, Math.min(460, Number(msg.y) || player.y));
+        publishImposter(ws.data.room);
+        return;
+      }
+      if (action === "task" && game.phase === "active" && role === "crew" && player.alive !== false) {
+        const station = IMPOSTER_TASKS.find(s => s.id === msg.station);
+        if (!station || Math.hypot(player.x - station.x, player.y - station.y) > 72) {
+          ws.send(JSON.stringify({ type: "imposterNotice", text: "Move closer to a glowing station first." }));
+          return;
+        }
+        const done = game.tasks.get(ws.data.id) || new Set();
+        if (done.has(station.id)) {
+          ws.send(JSON.stringify({ type: "imposterNotice", text: "You already completed that station." }));
+          return;
+        }
+        done.add(station.id);
+        game.tasks.set(ws.data.id, done);
+        ws.send(JSON.stringify({ type: "imposterPrivate", role, completed: Array.from(done), round: game.round }));
+        notifyRoom(ws.data.room, player.name + " completed a ship task.");
+        checkImposterWin(room);
+        publishImposter(ws.data.room);
+        return;
+      }
+      if (action === "kill" && game.phase === "active" && role === "imposter" && player.alive !== false) {
+        const now = Date.now();
+        if (now - (game.killAt.get(ws.data.id) || 0) < 10000) {
+          ws.send(JSON.stringify({ type: "imposterNotice", text: "Sabotage is cooling down." }));
+          return;
+        }
+        const targets = Array.from(game.roles.entries())
+          .filter(([id, targetRole]) => targetRole === "crew" && room.players.has(id) && room.players.get(id).alive !== false)
+          .map(([id]) => room.players.get(id))
+          .sort((a,b) => Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y));
+        const target = targets[0];
+        if (!target || Math.hypot(target.x-player.x,target.y-player.y) > 62) {
+          ws.send(JSON.stringify({ type: "imposterNotice", text: "Get closer to a crewmate to sabotage." }));
+          return;
+        }
+        target.alive = false;
+        game.killAt.set(ws.data.id, now);
+        game.bodies.push({ x: target.x, y: target.y, name: target.name });
+        notifyRoom(ws.data.room, "A crewmate has disappeared… find the body!");
+        checkImposterWin(room);
+        publishImposter(ws.data.room);
+        return;
+      }
+      if (action === "report" && game.phase === "active" && role && role !== "spectator" && player.alive !== false) {
+        const unreported = game.bodies.length > 0;
+        if (!unreported && game.emergencyUsed) {
+          ws.send(JSON.stringify({ type: "imposterNotice", text: "The emergency meeting has already been used." }));
+          return;
+        }
+        if (!unreported) game.emergencyUsed = true;
+        beginMeeting(room, unreported ? player.name + " reported a body!" : player.name + " called an emergency meeting!");
+        if (unreported) { game.bodies.length = 0; publishImposter(ws.data.room); }
+        return;
+      }
+      if (action === "vote" && game.phase === "discussion" && role && role !== "spectator" && player.alive !== false) {
+        const target = String(msg.target || "skip");
+        if (target !== "skip") {
+          if (!room.players.has(target) || room.players.get(target).alive === false || game.roles.get(target) === "spectator") return;
+        }
+        game.votes.set(ws.data.id, target);
+        const alive = Array.from(game.roles.keys()).filter(id => room.players.has(id) && room.players.get(id).alive !== false && game.roles.get(id) !== "spectator");
+        if (alive.every(id => game.votes.has(id))) resolveMeeting(ws.data.room, game.round);
+        else publishImposter(ws.data.room);
+        return;
+      }
+    },
+    close(ws) {
+      const room = rooms.get(ws.data.room);
+      if (!room) return;
+      room.players.delete(ws.data.id);
+      room.connections.delete(ws.data.id);
+      if(room.objectGame){const role=room.objectGame.roles.get(ws.data.id);room.objectGame.roles.delete(ws.data.id);room.objectGame.clues.delete(ws.data.id);if(role==="imposter"&&room.objectGame.phase!=="ended")finishObjectGame(room,"crew","The imposter left. Crewmates win!");else maybeAdvanceObject(room)}
+      if(room.spellingGame&&room.spellingGame.phase==="active"){room.spellingGame.roster.delete(ws.data.id);const active=Array.from(room.spellingGame.roster).filter(id=>room.connections.has(id));if(active.length&&active.every(id=>room.spellingGame.responses.has(id)))resolveSpellingGame(room,room.spellingGame.round);else publishSpellingGame(room)}
+      if (room.imposter) {
+        room.imposter.roles.delete(ws.data.id);
+        room.imposter.tasks.delete(ws.data.id);
+        room.imposter.votes.delete(ws.data.id);
+        checkImposterWin(room);
+        if (room.imposter.phase !== "ended") publishImposter(ws.data.room);
+      }
+      serverRef.publish(ws.data.room, JSON.stringify({ type: "players", players: Array.from(room.players.values()) }));
+      if (!room.players.size) {
+        if (room.imposter && room.imposter.meetingTimer) clearTimeout(room.imposter.meetingTimer);
+        if(room.objectGame&&room.objectGame.timer)clearTimeout(room.objectGame.timer);
+        if(room.spellingGame&&room.spellingGame.timer)clearTimeout(room.spellingGame.timer);
+        rooms.delete(ws.data.room);
+      }
+    }
+  };
+return {websocket,room:getRoom};
+}
+
+
+(function(){
+"use strict";
+const GAMES=[
+{id:"sketch",name:"Scribble Squad",emoji:"🎨",cat:"Creative",desc:"Draw together on one shared canvas. Make a masterpiece or a beautiful disaster.",players:"2–12",keys:"Mouse / touch",color:"#8e74f5"},
+{id:"parkour",name:"Neon Parkour",emoji:"🏃",cat:"Action",desc:"Hop over hazards, keep your combo, and race your friends to the finish.",players:"2–8",keys:"← → / Space",color:"#49d6ef"},
+{id:"meteor",name:"Meteor Mayhem",emoji:"☄️",cat:"Action",desc:"Pilot your tiny ship, dodge falling space rocks, and survive as long as possible.",players:"2–8",keys:"← → or A / D",color:"#ff9b66"},
+{id:"snake",name:"Snake Arena",emoji:"🐍",cat:"Action",desc:"Grow your neon snake, grab the stars, and avoid crashing into yourself.",players:"2–8",keys:"Arrow keys",color:"#6ee7a8"},
+{id:"pong",name:"Pixel Pong",emoji:"🏓",cat:"Action",desc:"The classic paddle showdown. First to five points wins the bragging rights.",players:"2",keys:"W / S or ↑ / ↓",color:"#f6d365"},
+{id:"ttt",name:"Tic-Tac-Toe Turbo",emoji:"❎",cat:"Puzzle",desc:"A quick strategy duel. Take turns, line up three, and claim the crown.",players:"2",keys:"Click a square",color:"#bd9bff"},
+{id:"connect",name:"Connect Four",emoji:"🔴",cat:"Puzzle",desc:"Drop your discs, block your rival, and connect four before they do.",players:"2",keys:"Click a column",color:"#ff7ba8"},
+{id:"memory",name:"Memory Match",emoji:"🧠",cat:"Puzzle",desc:"Flip cards, remember the symbols, and find every pair with the fewest moves.",players:"1–8",keys:"Click cards",color:"#75d7ff"},
+{id:"reaction",name:"Reaction Rivals",emoji:"⚡",cat:"Party",desc:"Wait for green, then tap fast. False starts cost you. Who has lightning reflexes?",players:"2–12",keys:"Click / Space",color:"#ffe276"},
+{id:"mole",name:"Mole Mash",emoji:"🔨",cat:"Party",desc:"Bonk the popping mole before it disappears. Rack up points in 20 seconds.",players:"1–12",keys:"Click the mole",color:"#f8a4d4"},
+{id:"typing",name:"Type-Off",emoji:"⌨️",cat:"Party",desc:"Race to type the silly sentence accurately. Speed is good; accuracy is better.",players:"2–12",keys:"Type the phrase",color:"#8eafff"},
+{id:"math",name:"Math Blitz",emoji:"🧮",cat:"Puzzle",desc:"Ten quick-fire number challenges. Solve them fast and climb the room leaderboard.",players:"1–12",keys:"Click an answer",color:"#9ce6c0"},
+{id:"imposter",name:"Imposter Hunt",emoji:"🛸",cat:"Party",desc:"A 2D spaceship mystery for your whole crew. Finish tasks, catch the saboteurs, call meetings and vote.",players:"4–16",keys:"WASD / Arrows",color:"#ff7d9e"},
+{id:"mostlikely",name:"Most Likely To",emoji:"👀",cat:"Party",desc:"Read the ridiculous prompt, pick the friend who fits, and see who the group thinks of first.",players:"3–16",keys:"Click to vote",color:"#ffc46b"},
+{id:"wouldyou",name:"Would You Rather?",emoji:"🤔",cat:"Party",desc:"Two impossible choices. Everyone votes. Defend your pick and expose your friends' wild opinions.",players:"3–16",keys:"Click A or B",color:"#83b8ff"},
+{id:"wordguess",name:"Guess the Word",emoji:"🔤",cat:"Party",desc:"One secret word, clever clues and a room full of guesses. Race to solve it before the timer runs out.",players:"2–16",keys:"Type your guess",color:"#7ee8bd"},
+{id:"mindmeld",name:"Mind Meld",emoji:"🧠",cat:"Party",desc:"Think alike! Everyone answers the same weird prompt. Match another player’s answer to score together.",players:"2–16",keys:"Type one answer",color:"#f0a4ff"},
+{id:"social3d",name:"Sunset Social 3D",emoji:"🌴",cat:"Action",desc:"Explore a detailed 3D island hangout with your friends. Walk, jump, wave, dance and find glowing party tokens.",players:"2–16",keys:"WASD + mouse",color:"#ffb875"},
+{id:"objectimposter",name:"Object Imposter",emoji:"🕵️",cat:"Party",desc:"Crewmates secretly receive one object and describe it without naming it. The one imposter has to figure it out.",players:"3–16",keys:"Describe / guess",color:"#ff9b86"},
+{id:"spellingbee",name:"Spelling Bee",emoji:"🐝",cat:"Party",desc:"Listen to the voice narrator, spell the word, and compete for the room spelling crown.",players:"2–16",keys:"Listen / type",color:"#f7d46e"}
+];
+const $=s=>document.querySelector(s);
+const gamesGrid=$("#games-grid"),overlay=$("#game-overlay"),stage=$("#stage"),playersEl=$("#player-list"),chatLog=$("#chat-log"),roomInput=$("#room-code");
+let myName=localStorage.getItem("pa_name")||("Player"+Math.floor(10+Math.random()*89));
+let myId="p"+Math.random().toString(36).slice(2,10),myColor=["#78e8ff","#ff83c7","#b9a0ff","#ffe078","#75e5a5","#ff9b76"][Math.floor(Math.random()*6)];
+let room="PUBLIC",socket=null,connected=false,serverPlayerId=null,players=[],activeGame=null,S={},keys={},raf=0,lastUpdate=0,chatHistory=[],scores={},moleTimer=0,gameTimer=0,gameInterval=null,gameTimeout=null;
+$("#top-player").textContent=myName;
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2200)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderCards(filter){gamesGrid.innerHTML=GAMES.filter(g=>filter==="All"||g.cat===filter).map(g=>'<button class="game-card" data-game="'+g.id+'"><div class="game-art" style="box-shadow:inset 0 0 35px '+g.color+'20">'+g.emoji+'</div><h3>'+g.name+'</h3><p>'+g.desc+'</p><div class="game-meta"><span class="tag">'+g.cat+'</span><span class="playhint">'+g.players+' · PLAY ↗</span></div></button>').join("")}
+renderCards("All");
+gamesGrid.addEventListener("click",e=>{const b=e.target.closest("[data-game]");if(b)openGame(b.dataset.game)});
+document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderCards(b.dataset.filter)}));
+$("#nav-games").onclick=()=>$("#games-section").scrollIntoView({behavior:"smooth"});
+$("#nav-room").onclick=()=>$("#room-section").scrollIntoView({behavior:"smooth"});
+$("#nav-how").onclick=()=>$("#how-section").scrollIntoView({behavior:"smooth"});
+$("#close-game").onclick=closeGame;
+overlay.addEventListener("click",e=>{if(e.target===overlay)closeGame()});
+window.addEventListener("keydown",e=>{if(e.key==="Escape")closeGame();keys[e.key.toLowerCase()]=true;if(activeGame&&["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault()});
+window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false});
+
+let sbClient=null,roomChannel=null,myPrivateChannel=null,hostChannels=new Map(),roomEngine=null,isRoomHost=false,roomMembers=new Map(),socket=null;
+const supaConfig=window.PARTY_ARCADE_SUPABASE||{};
+function setRoomStatus(text){const el=$("#connection-label");if(el)el.textContent=text}
+function flattenPresence(){const state=roomChannel?roomChannel.presenceState():{};return Object.values(state).flat().filter(p=>p&&p.id)}
+function createHostWrapper(info){
+ const existing=roomEngine.room(room).connections.get(info.id);if(existing)return existing;
+ const wrapper={data:{room,name:info.name,id:info.id,color:info.color},readyState:1,send(raw){
+  if(info.id===myId){try{handleMessage(JSON.parse(raw))}catch{};return}
+  const channel=hostChannels.get(info.id);if(channel)channel.send({type:"broadcast",event:"server-message",payload:{message:raw}});
+ },subscribe(){}};
+ roomEngine.websocket.open(wrapper);return wrapper;
+}
+async function openHostChannel(info){
+ if(info.id===myId)return null;if(hostChannels.has(info.id))return hostChannels.get(info.id);
+ const channel=sbClient.channel("party-player:"+room+":"+info.id,{config:{private:true,broadcast:{self:false}}});hostChannels.set(info.id,channel);
+ await new Promise((resolve,reject)=>{let done=false;const timer=setTimeout(()=>{if(!done){done=true;reject(new Error("Timed out opening a player's private channel."))}},8000);channel.subscribe(status=>{if(status==="SUBSCRIBED"&&!done){done=true;clearTimeout(timer);resolve()}else if((status==="CHANNEL_ERROR"||status==="TIMED_OUT")&&!done){done=true;clearTimeout(timer);reject(new Error("Could not open a player's private channel."))}})});
+ return channel;
+}
+async function ensureHostMember(info){
+ if(!isRoomHost||!roomEngine||!info?.id)return;const r=roomEngine.room(room);
+ if(r.players.has(info.id))return;if(r.players.size>=16){if(info.id!==myId){const c=hostChannels.get(info.id);if(c)c.send({type:"broadcast",event:"server-message",payload:{message:JSON.stringify({type:"imposterNotice",text:"This room is full (16 players maximum)."})}})}return}
+ if(info.id!==myId)await openHostChannel(info);createHostWrapper(info);
+}
+async function refreshRoomHost(){
+ if(!roomChannel)return;const members=flattenPresence();
+ const unique=[...new Map(members.map(m=>[m.id,m])).values()].sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0)||String(a.id).localeCompare(String(b.id)));
+ const leader=unique[0]?.id||null,wasHost=isRoomHost;isRoomHost=leader===myId;roomMembers=new Map(unique.map(m=>[m.id,m]));
+ if(isRoomHost&&!roomEngine){roomEngine=createRoomEngine();for(const member of unique)await ensureHostMember(member);setRoomStatus("Live · room "+room+" · you are host")}
+ else if(isRoomHost&&roomEngine){for(const member of unique)await ensureHostMember(member)}
+ if(wasHost&&!isRoomHost&&roomEngine){try{for(const ws of roomEngine.room(room).connections.values())roomEngine.websocket.close(ws)}catch{}roomEngine=null;for(const c of hostChannels.values())sbClient.removeChannel(c);hostChannels.clear()}
+ if(!isRoomHost&&leader){const lead=unique.find(m=>m.id===leader);setRoomStatus("Live · room "+room+" · host "+(lead?.name||"friend"))}
+ if(!leader)setRoomStatus("Waiting for room host…");
+}
+async function disconnectSupabaseRoom(){
+ isRoomHost=false;roomEngine=null;roomMembers.clear();
+ try{if(roomChannel)await sbClient.removeChannel(roomChannel)}catch{}
+ try{if(myPrivateChannel)await sbClient.removeChannel(myPrivateChannel)}catch{}
+ for(const c of hostChannels.values()){try{await sbClient.removeChannel(c)}catch{}}
+ hostChannels.clear();roomChannel=null;myPrivateChannel=null;
+}
+function connectRoom(code){
+ room=(code||"PUBLIC").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,10)||"PUBLIC";
+ if(socket){try{socket.close()}catch{}}
+ connected=false;$("#room-label").textContent=room==="PUBLIC"?"Public lobby":"Room "+room;setRoomStatus("Connecting to Supabase…");roomInput.value=room==="PUBLIC"?"":room;
+ socket={readyState:0,send(raw){
+  if(!connected||!roomChannel)return;
+  if(isRoomHost&&roomEngine){const ws=roomEngine.room(room).connections.get(myId);if(ws)roomEngine.websocket.message(ws,raw)}
+  else roomChannel.send({type:"broadcast",event:"client-message",payload:{id:myId,data:raw}});
+ },close(){if(this.readyState===3)return;this.readyState=3;connected=false;disconnectSupabaseRoom().then(()=>{if(this.onclose)this.onclose()})}};
+ initSupabaseRoom(room).catch(err=>{connected=false;socket.readyState=3;setRoomStatus("Multiplayer setup needed");toast(err?.message||"Could not connect to multiplayer")});
+}
+async function initSupabaseRoom(code){
+ if(!supaConfig.url||!supaConfig.anonKey||supaConfig.url.includes("YOUR-PROJECT"))throw new Error("Supabase is not configured yet. Follow SUPABASE_SETUP.md and add docs/supabase-config.js.");
+ if(!window.supabase?.createClient)throw new Error("Supabase client library failed to load. Check your internet connection and reload.");
+ if(!sbClient)sbClient=window.supabase.createClient(supaConfig.url,supaConfig.anonKey,{auth:{persistSession:true,autoRefreshToken:true}});
+ let {data:{session}}=await sbClient.auth.getSession();if(!session){const auth=await sbClient.auth.signInAnonymously();if(auth.error)throw new Error("Enable Anonymous sign-ins in Supabase Auth settings: "+auth.error.message)}
+ myPrivateChannel=sbClient.channel("party-player:"+code+":"+myId,{config:{private:true,broadcast:{self:false}}});
+ myPrivateChannel.on("broadcast",{event:"server-message"},({payload})=>{if(payload?.message){let m;try{m=JSON.parse(payload.message)}catch{return}handleMessage(m)}});
+ await new Promise((resolve,reject)=>{myPrivateChannel.subscribe(status=>{if(status==="SUBSCRIBED")resolve();else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")reject(new Error("Could not subscribe to your private player channel. Check Supabase Realtime RLS policies."))})});
+ roomChannel=sbClient.channel("party-room:"+code,{config:{private:true,broadcast:{self:true},presence:{key:myId}}});
+ roomChannel.on("presence",{event:"sync"},()=>refreshRoomHost());
+ roomChannel.on("presence",{event:"join"},()=>refreshRoomHost());
+ roomChannel.on("presence",{event:"leave"},()=>refreshRoomHost());
+ roomChannel.on("broadcast",{event:"client-hello"},async({payload})=>{if(isRoomHost&&payload?.member)await ensureHostMember(payload.member)});
+ roomChannel.on("broadcast",{event:"client-message"},async({payload})=>{if(!isRoomHost||!payload?.id||!payload?.data)return;const member=roomMembers.get(payload.id);if(!member)return;await ensureHostMember(member);const ws=roomEngine?.room(code).connections.get(payload.id);if(ws)roomEngine.websocket.message(ws,payload.data)});
+ await new Promise((resolve,reject)=>{roomChannel.subscribe(async status=>{if(status==="SUBSCRIBED"){const member={id:myId,name:myName,color:myColor,joinedAt:Date.now()};await roomChannel.track(member);connected=true;socket.readyState=1;setRoomStatus("Live · room "+code);if(socket.onopen)socket.onopen();await roomChannel.send({type:"broadcast",event:"client-hello",payload:{member}});resolve()}else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")reject(new Error("Could not join Supabase room. Check that Realtime is enabled and the SQL policies are installed."))})});
+ await refreshRoomHost();
+}
+
+function send(m){if(socket&&socket.readyState===1)socket.send(JSON.stringify(m))}
+function broadcastEvent(event){send({type:"gameEvent",gameId:activeGame,event})}
+function handleMessage(m){
+ if(m.type==="snapshot"){serverPlayerId=m.selfId||null;players=m.players||[];renderPlayers();if(activeGame==="imposter")send({type:"imposterAction",action:"sync"});if(activeGame==="objectimposter")send({type:"objectAction",action:"sync"});if(activeGame==="spellingbee")send({type:"spellingAction",action:"sync"});return}
+ if(m.type==="players"){players=m.players||[];renderPlayers();if(activeGame==="imposter")renderImposterHud();return}
+ if(m.type==="chat"){addChat(m.name,m.text,m.color);return}
+ if(m.type==="imposterState"){if(activeGame==="imposter"){S.imposterState=m.state;drawImposter();renderImposterHud()}return}
+ if(m.type==="imposterPrivate"){if(activeGame==="imposter"){S.role=m.role;S.completed=m.completed||[];renderImposterHud()}return}
+ if(m.type==="imposterNotice"){toast(m.text||"");return}
+ if(m.type==="wordState"){S.wordState=m.state;if(activeGame==="wordguess")renderWordGuess();return}
+ if(m.type==="mindState"){S.mindState=m.state;if(activeGame==="mindmeld")renderMindMeld();return}
+ if(m.type==="mindPrivate"){S.mindSubmitted=!!m.submitted;if(activeGame==="mindmeld")renderMindMeld();return}
+ if(m.type==="objectState"){S.objectState=m.state;if(activeGame==="objectimposter")renderObjectImposter();return}
+ if(m.type==="objectPrivate"){S.objectPrivate=m;if(activeGame==="objectimposter")renderObjectImposter();return}
+ if(m.type==="spellingState"){S.spellingState=m.state;if(activeGame==="spellingbee")renderSpellingBee();return}
+ if(m.type==="spellingPrivate"){S.spellingPrivate=m;S.spellingSubmitted=!!m.submitted;if(activeGame==="spellingbee"){renderSpellingBee();if(m.round!==S.narratedRound){S.narratedRound=m.round;setTimeout(speakBeeWord,450)}}return}
+
+ if(m.type==="playerUpdate"){players=m.players||players;renderPlayers();return}
+ if(m.type==="gameEvent"){if(m.player&&m.player.id===serverPlayerId)return;handleGameEvent(m.gameId,m.event,m.player);return}
+}
+function renderPlayers(){
+ const list=players.slice().sort((a,b)=>a.id===serverPlayerId?-1:b.id===serverPlayerId?1:a.name.localeCompare(b.name));
+ $("#room-label").textContent=(room==="PUBLIC"?"Public lobby":"Room "+room)+" · "+players.length+"/16";
+ playersEl.innerHTML=list.length?list.map(p=>'<div class="player-row"><span class="avatar" style="background:'+esc(p.color)+'">'+esc((p.name||"?").slice(0,1).toUpperCase())+'</span><span>'+esc(p.name)+(p.id===serverPlayerId?' <b style="color:#8cf0c7">(you)</b>':'')+'</span><span class="score" id="score-'+esc(p.id)+'">'+(scores[p.id]||"")+'</span></div>').join(""):'<div class="muted">No players yet. Invite your friends!</div>';
+}
+function addChat(name,text,color){const line=document.createElement("div");line.className="chat-msg";line.innerHTML='<b style="color:'+esc(color||"#9feaff")+'">'+esc(name)+':</b> '+esc(text);chatLog.appendChild(line);chatLog.scrollTop=chatLog.scrollHeight;if(chatLog.children.length>50)chatLog.removeChild(chatLog.firstChild)}
+$("#chat-form").addEventListener("submit",e=>{e.preventDefault();const v=$("#chat-input").value.trim();if(!v)return;send({type:"chat",text:v});$("#chat-input").value=""});
+$("#join-room").onclick=()=>{const code=roomInput.value.trim();if(!code){toast("Enter a room code first");return}connectRoom(code)};
+$("#create-room").onclick=()=>{const code=Math.random().toString(36).slice(2,7).toUpperCase();connectRoom(code);history.replaceState(null,"","?room="+code);toast("Private room created: "+code)};
+$("#copy-room").onclick=async()=>{const url=location.origin+(room==="PUBLIC"?"/":"?room="+room);try{await navigator.clipboard.writeText(url);toast("Invite link copied!")}catch{toast("Room code: "+room)}};
+const params=new URLSearchParams(location.search);connectRoom(params.get("room")||"PUBLIC");
+function cleanupTimers(){if(raf)cancelAnimationFrame(raf);if(gameInterval)clearInterval(gameInterval);if(gameTimeout)clearTimeout(gameTimeout);if(S&&typeof S.threeCleanup==="function"){try{S.threeCleanup()}catch{}}if(window.speechSynthesis)window.speechSynthesis.cancel();raf=0;gameInterval=null;gameTimeout=null}
+function closeGame(){cleanupTimers();activeGame=null;overlay.classList.remove("show")}
+function baseStage(help){stage.innerHTML='<div class="game-ui" id="game-ui"></div><p class="game-help">'+help+'</p><div class="controls" id="game-controls"></div>'}
+function canvasStage(help){stage.innerHTML='<canvas id="game-canvas" width="900" height="500"></canvas><p class="game-help">'+help+'</p><div class="controls" id="game-controls"></div>'}
+function addControls(items){const c=$("#game-controls");if(!c)return;c.innerHTML=items.map(x=>'<button class="ctrl" data-control="'+x.id+'">'+x.label+'</button>').join("");c.onclick=e=>{const b=e.target.closest("[data-control]");if(b)control(b.dataset.control)}}
+function control(id){
+ if(id==="reset"){openGame(activeGame);return}
+ if(id==="jump"){S.jump=true;return}
+ if(id==="3d-wave"){sendSocialEmote("wave");return}
+ if(id==="3d-dance"){sendSocialEmote("dance");return}
+ if(id==="3d-jump"){keys[" "]=true;setTimeout(()=>keys[" "]=false,150);return}
+ if(id==="3d-forward"||id==="3d-back"||id==="3d-left"||id==="3d-right"){const k={"3d-forward":"w","3d-back":"s","3d-left":"a","3d-right":"d"}[id];keys[k]=true;setTimeout(()=>keys[k]=false,190);return}
+ if(id==="imposter-up"||id==="imposter-left"||id==="imposter-down"||id==="imposter-right"){const k=id==="imposter-up"?"arrowup":id==="imposter-down"?"arrowdown":id==="imposter-left"?"arrowleft":"arrowright";keys[k]=true;setTimeout(()=>keys[k]=false,160);return}
+ if(id==="imposter-task"){const el=$("#imp-task");if(el)el.click();return}
+ if(id==="imposter-kill"){const el=$("#imp-kill");if(el)el.click();return}
+ if(id==="imposter-report"){const el=$("#imp-report");if(el)el.click();return}
+ if(id==="imposter-start"){const el=$("#imp-start");if(el)el.click();return}
+ if(id==="left"){keys.arrowleft=true;setTimeout(()=>keys.arrowleft=false,180);return}
+ if(id==="right"){keys.arrowright=true;setTimeout(()=>keys.arrowright=false,180);return}
+ if(id==="up"){keys.arrowup=true;setTimeout(()=>keys.arrowup=false,180);return}
+ if(id==="down"){keys.arrowdown=true;setTimeout(()=>keys.arrowdown=false,180);return}
+ if(id==="clear"){if(S.ctx){S.ctx.clearRect(0,0,900,500);S.strokes=[];broadcastEvent({kind:"clear"})}return}
+ if(id==="start-reaction")startReaction();
+ if(id==="mole")hitMole();
+}
+function openGame(id){
+ cleanupTimers();activeGame=id;S={};const g=GAMES.find(x=>x.id===id);if(!g)return;
+ $("#game-title").textContent=g.emoji+" "+g.name;$("#game-subtitle").textContent=g.players+" players · "+g.keys+" · Room "+room;overlay.classList.add("show");chatLog.innerHTML="";renderPlayers();
+ const help={
+ sketch:"Drag or touch the canvas to draw. Every stroke is shared with this room in real time.",
+ parkour:"Run automatically. Jump over the glowing blocks. Press SPACE or ↑, or tap JUMP.",
+ meteor:"Move left and right to dodge falling meteors. Survive as long as you can.",
+ snake:"Use the arrow keys to guide your snake and collect glowing dots. Don't hit yourself!",
+ pong:"Move your paddle with W/S or ↑/↓. Players in the room control opposite paddles.",
+ ttt:"Players take turns. First to line up three marks wins. Moves appear for everyone in the room.",
+ connect:"Take turns dropping discs. Connect four horizontally, vertically or diagonally.",
+ memory:"Take turns finding matching pairs. The whole room shares one deck.",
+ reaction:"Press start, wait for the screen to turn green, then click fast. Don't jump the gun!",
+ mole:"Tap the mole as it pops up. Every hit earns one point. The round lasts 20 seconds.",
+ typing:"Type the phrase as fast as you can. Your progress is visible to everyone in the room.",
+ math:"Solve ten quick questions. Your score is shown on the room leaderboard.",
+ imposter:"A top-down social deduction mystery for 4–16 players. Move around the ship, complete tasks, catch the imposters, and vote them out.",
+ mostlikely:"Vote for the friend who best matches each hilarious prompt. See the room results.",
+ wouldyou:"Vote between two chaotic choices and compare the whole room.",
+ wordguess:"A shared secret-word challenge. Everyone sees the same clue and races to type the answer.",
+ mindmeld:"Everyone secretly answers one prompt. Reveal together and score points when your minds match.",
+ social3d:"Explore a detailed 3D island with your friends. Walk, jump, wave, dance and collect glowing tokens.",objectimposter:"Crewmates all get the same secret object. Describe it without saying its name while one imposter tries to identify it.",spellingbee:"A voice narrator speaks each word and sentence. Type the word you hear."
+ }[id];
+ if(id==="imposter"){setupImposter();return}
+ if(id==="wordguess"){setupWordGuess();return}
+ if(id==="mindmeld"){setupMindMeld();return}
+ if(id==="social3d"){setupSocial3D();return}
+ if(id==="objectimposter"){setupObjectImposter();return}
+ if(id==="spellingbee"){setupSpellingBee();return}
+ if(["sketch","parkour","meteor","snake","pong"].includes(id)){canvasStage(help);setupCanvasGame(id);return}
+ baseStage(help);
+ if(id==="mostlikely")setupMostLikely();
+ if(id==="wouldyou")setupWouldYou();
+ if(id==="ttt")setupTtt();
+ if(id==="connect")setupConnect();
+ if(id==="memory")setupMemory();
+ if(id==="reaction")setupReaction();
+ if(id==="mole")setupMole();
+ if(id==="typing")setupTyping();
+ if(id==="math")setupMath();
+}
+function handleGameEvent(gameId,event,player){
+ if(gameId!==activeGame||!event)return;
+ if(gameId==="sketch"){
+  if(event.kind==="stroke"&&S.ctx)drawStroke(event.points,event.color,event.width);
+  if(event.kind==="clear"&&S.ctx)S.ctx.clearRect(0,0,900,500);
+ }
+ if(gameId==="parkour"&&event.kind==="pos"){S.others=S.others||{};S.others[player.id]={...event,name:player.name,color:player.color}}
+ if(gameId==="meteor"&&event.kind==="ship"){S.others=S.others||{};S.others[player.id]={...event,name:player.name,color:player.color}}
+ if(gameId==="snake"&&event.kind==="snake"){S.others=S.others||{};S.others[player.id]={body:event.body,color:player.color,name:player.name}}
+ if(gameId==="pong"&&event.kind==="paddle"){S.paddles=S.paddles||{};S.paddles[player.id]=event.y}
+ if(gameId==="pong"&&event.kind==="ball"){S.ball=event.ball;S.pongScore=event.score}
+ if(gameId==="ttt"&&event.kind==="move")applyTtt(event.cell,event.mark,false); if(gameId==="ttt"&&event.kind==="tttReset"){S.board=Array(9).fill("");S.moves=0;S.done=false;renderTtt()}
+ if(gameId==="connect"&&event.kind==="drop")applyConnect(event.col,event.mark,false); if(gameId==="connect"&&event.kind==="connectReset"){S.board=Array.from({length:6},()=>Array(7).fill(""));S.moves=0;S.done=false;renderConnect()}
+ if(gameId==="memory"&&event.kind==="flip")applyMemory(event.index,player.name,false); if(gameId==="memory"&&event.kind==="memoryReset"){S.deck=event.deck;S.open=[];S.matched=[];S.turns=0;renderMemory()}
+ if(gameId==="reaction"&&event.kind==="score")setScore(player.id,event.score);
+ if(gameId==="mole"&&event.kind==="score")setScore(player.id,event.score);
+ if(gameId==="typing"&&event.kind==="progress"){S.progress=S.progress||{};S.progress[player.id]={name:player.name,pct:event.pct,color:player.color};renderTypingProgress()}
+ if(gameId==="math"&&event.kind==="score")setScore(player.id,event.score);
+ if(gameId==="mostlikely"){if(event.kind==="prompt"){S.prompt=event.prompt;S.votes={};renderMostLikely()}if(event.kind==="vote"){S.votes[player.id]=event.target;renderMostLikely()}}
+ if(gameId==="wouldyou"){if(event.kind==="prompt"){S.prompt=event.prompt;S.votes={};renderWouldYou()}if(event.kind==="vote"){S.votes[player.id]=event.choice;renderWouldYou()}}
+ if(gameId==="social3d"&&(event.kind==="position"||event.kind==="emote")){S.remote3D=S.remote3D||{};S.remote3D[player.id]=Object.assign(S.remote3D[player.id]||{},event,{name:player.name,color:player.color,lastSeen:Date.now()})}
+}
+function setScore(id,value){const key=id===myId?(serverPlayerId||myId):id;scores[key]=value;const el=$("#score-"+key);if(el)el.textContent=value}
+function setupCanvasGame(id){
+ const canvas=$("#game-canvas"),ctx=canvas.getContext("2d");S.canvas=canvas;S.ctx=ctx;S.others={};S.lastSend=0;
+ if(id==="sketch"){
+  S.strokes=[];ctx.fillStyle="#0d1528";ctx.fillRect(0,0,900,500);ctx.strokeStyle="#ffffff0c";ctx.lineWidth=1;for(let x=0;x<900;x+=45){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,500);ctx.stroke()}for(let y=0;y<500;y+=45){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(900,y);ctx.stroke()}
+  S.drawing=false;let pts=[];canvas.onpointerdown=e=>{S.drawing=true;pts=[];const p=point(e);pts.push(p);canvas.setPointerCapture(e.pointerId)};canvas.onpointermove=e=>{if(!S.drawing)return;const p=point(e);pts.push(p);drawStroke(pts.slice(-2),myColor,5)};canvas.onpointerup=()=>{if(!S.drawing)return;S.drawing=false;if(pts.length>1)broadcastEvent({kind:"stroke",points:pts,color:myColor,width:5});};
+  addControls([{id:"clear",label:"🧽 Clear canvas"}]);return;
+ }
+ if(id==="parkour"){
+  S.x=100;S.y=0;S.vy=0;S.world=0;S.score=0;S.others={};S.dead=false;S.obstacles=[480,760,1050,1320,1630,1920,2220,2530];
+  addControls([{id:"left",label:"←"},{id:"jump",label:"JUMP / SPACE"},{id:"right",label:"→"},{id:"reset",label:"↻ Restart"}]);
+ }
+ if(id==="meteor"){
+  S.x=450;S.y=415;S.meteors=[];S.score=0;S.lives=3;S.others={};S.lastSpawn=0;
+  addControls([{id:"left",label:"←"},{id:"right",label:"→"},{id:"reset",label:"↻ Restart"}]);
+ }
+ if(id==="snake"){
+  S.snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];S.dir={x:1,y:0};S.food={x:18,y:10};S.others={};S.score=0;S.tick=0;
+  addControls([{id:"up",label:"↑"},{id:"left",label:"←"},{id:"down",label:"↓"},{id:"right",label:"→"},{id:"reset",label:"↻ Restart"}]);
+ }
+ if(id==="pong"){
+  S.paddles={};S.ball={x:450,y:250,vx:5,vy:3};S.pongScore=[0,0];S.others={};S.lastBall=0;
+  addControls([{id:"up",label:"↑"},{id:"down",label:"↓"},{id:"reset",label:"↻ Restart"}]);
+ }
+ S.lastFrame=performance.now();function frame(t){if(activeGame!==id)return;const dt=Math.min(40,t-S.lastFrame);S.lastFrame=t;updateCanvasGame(id,t,dt);drawCanvasGame(id);raf=requestAnimationFrame(frame)}raf=requestAnimationFrame(frame);
+}
+function point(e){const r=S.canvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*900,y:(e.clientY-r.top)/r.height*500}}
+function drawStroke(points,color,width){if(!S.ctx||!points||!points.length)return;const c=S.ctx;c.strokeStyle=color||"#fff";c.lineWidth=width||5;c.lineCap="round";c.lineJoin="round";c.beginPath();c.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)c.lineTo(points[i].x,points[i].y);if(points.length===1)c.lineTo(points[0].x+.1,points[0].y+.1);c.stroke()}
+function updateCanvasGame(id,t,dt){
+ if(id==="parkour"){
+  const ground=408;if(S.jump||keys[" "]||keys.arrowup||keys.w){if(S.y===0)S.vy=-15;S.jump=false}
+  S.vy+=.72;S.y+=S.vy;if(S.y>0){S.y=0;S.vy=0}
+  S.world+=dt*.34;S.score=Math.floor(S.world/10);
+  for(const ob of S.obstacles){const ox=ob-S.world%3000+Math.floor(S.world/3000)*3000; if(ox>65&&ox<130&&S.y>-40){S.world=Math.max(0,S.world-180);S.score=Math.floor(S.world/10);}}
+  if(t-S.lastSend>70){broadcastEvent({kind:"pos",x:S.x,y:S.y,score:S.score});S.lastSend=t}
+ }
+ if(id==="meteor"){
+  if(keys.arrowleft||keys.a)S.x-=7;if(keys.arrowright||keys.d)S.x+=7;S.x=Math.max(28,Math.min(872,S.x));
+  if(t-S.lastSpawn>560){S.meteors.push({x:25+Math.random()*850,y:-25,r:9+Math.random()*17,v:2.4+Math.random()*2.4});S.lastSpawn=t}
+  S.meteors.forEach(m=>m.y+=m.v);S.meteors=S.meteors.filter(m=>m.y<550);
+  for(const m of S.meteors){if(Math.hypot(m.x-S.x,m.y-S.y)<m.r+18){S.lives--;m.y=600;if(S.lives<=0){S.x=450;S.lives=3;S.score=0;S.meteors=[];toast("Ship repaired — go again!")}}}
+  S.score+=dt/1000;
+  if(t-S.lastSend>80){broadcastEvent({kind:"ship",x:S.x,y:S.y,score:Math.floor(S.score)});S.lastSend=t}
+ }
+ if(id==="snake"){
+  const d=S.dir;if((keys.arrowleft||keys.a)&&d.x!==1)S.dir={x:-1,y:0};if((keys.arrowright||keys.d)&&d.x!==-1)S.dir={x:1,y:0};if((keys.arrowup||keys.w)&&d.y!==1)S.dir={x:0,y:-1};if((keys.arrowdown||keys.s)&&d.y!==-1)S.dir={x:0,y:1};
+  if(t-S.tick>125){S.tick=t;const head={x:(S.snake[0].x+S.dir.x+30)%30,y:(S.snake[0].y+S.dir.y+16)%16};S.snake.unshift(head);if(head.x===S.food.x&&head.y===S.food.y){S.score++;S.food={x:Math.floor(Math.random()*30),y:Math.floor(Math.random()*16)}}else S.snake.pop();if(S.snake.slice(1).some(p=>p.x===head.x&&p.y===head.y)){S.snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];S.score=0}if(t-S.lastSend>120){broadcastEvent({kind:"snake",body:S.snake,score:S.score});S.lastSend=t}}
+ }
+ if(id==="pong"){
+  const arr=players.slice().sort((a,b)=>a.id.localeCompare(b.id));const index=Math.max(0,arr.findIndex(p=>p.id===serverPlayerId));S.side=index%2;
+  S.myY=S.myY||250;if(keys.arrowup||keys.w)S.myY-=8;if(keys.arrowdown||keys.s)S.myY+=8;S.myY=Math.max(65,Math.min(435,S.myY));
+  if(t-S.lastSend>65){broadcastEvent({kind:"paddle",y:S.myY});S.lastSend=t}
+  if(arr.length===0||arr[0].id===myId){
+   const b=S.ball;b.x+=b.vx;b.y+=b.vy;if(b.y<18||b.y>482)b.vy*=-1;const left=S.side===0?S.myY:(S.remoteY||250),right=S.side===1?S.myY:(S.remoteY||250);
+   if(b.x<48&&Math.abs(b.y-left)<68){b.vx=Math.abs(b.vx)*1.05;b.x=49}if(b.x>852&&Math.abs(b.y-right)<68){b.vx=-Math.abs(b.vx)*1.05;b.x=851}
+   if(b.x<0||b.x>900){S.pongScore[b.x<0?1:0]++;b.x=450;b.y=250;b.vx=(Math.random()>.5?5:-5);b.vy=(Math.random()>.5?3:-3)}
+   if(t-S.lastBall>50){broadcastEvent({kind:"ball",ball:b,score:S.pongScore});S.lastBall=t}
+  }
+  const other=Object.entries(S.paddles||{}).find(([k])=>k!==myId);S.remoteY=other?other[1]:250;
+ }
+}
+function drawCanvasGame(id){
+ const c=S.ctx;if(!c)return;c.clearRect(0,0,900,500);
+ if(id==="sketch")return;
+ if(id==="parkour"){
+  const grd=c.createLinearGradient(0,0,0,500);grd.addColorStop(0,"#141b38");grd.addColorStop(1,"#07101f");c.fillStyle=grd;c.fillRect(0,0,900,500);
+  for(let i=0;i<22;i++){c.fillStyle="#8ea5ff25";c.fillRect((i*83-S.world*.12%900),35+(i*43)%200,2,2)}
+  c.fillStyle="#182b45";c.fillRect(0,410,900,90);c.strokeStyle="#55dbff";c.lineWidth=3;c.beginPath();c.moveTo(0,410);c.lineTo(900,410);c.stroke();
+  for(const ob of S.obstacles){const ox=((ob-S.world%3000+3000)%3000);if(ox<900){c.fillStyle="#ff78ba";c.shadowBlur=18;c.shadowColor="#ff78ba";c.fillRect(ox,370,24,40);c.shadowBlur=0}}
+  c.fillStyle=myColor;c.shadowBlur=20;c.shadowColor=myColor;c.fillRect(100,370+S.y,28,40);c.shadowBlur=0;
+  for(const [id,p] of Object.entries(S.others||{})){c.fillStyle=p.color||"#a68cff";c.fillRect(150,370+(p.y||0),26,38)}
+  c.fillStyle="white";c.font="bold 20px system-ui";c.fillText("DISTANCE  "+S.score+"m",24,38);c.font="13px system-ui";c.fillStyle="#afc2e9";c.fillText("Jump the pink blocks!",24,62);return;
+ }
+ if(id==="meteor"){
+  c.fillStyle="#070d1d";c.fillRect(0,0,900,500);for(let i=0;i<70;i++){let x=(i*127+Math.floor(S.score*18))%900,y=(i*73)%500;c.fillStyle="#cfe2ff77";c.fillRect(x,y,2,2)}
+  for(const m of S.meteors){c.fillStyle="#ff9875";c.shadowBlur=15;c.shadowColor="#ff694f";c.beginPath();c.arc(m.x,m.y,m.r,0,Math.PI*2);c.fill();c.shadowBlur=0}
+  c.fillStyle=myColor;c.shadowBlur=22;c.shadowColor=myColor;c.beginPath();c.moveTo(S.x,S.y-21);c.lineTo(S.x-19,S.y+18);c.lineTo(S.x,S.y+9);c.lineTo(S.x+19,S.y+18);c.closePath();c.fill();c.shadowBlur=0;
+  for(const p of Object.values(S.others||{})){c.fillStyle=p.color||"#c5a2ff";c.beginPath();c.arc(p.x,p.y,9,0,Math.PI*2);c.fill()}
+  c.fillStyle="#fff";c.font="bold 20px system-ui";c.fillText("TIME "+Math.floor(S.score)+"s",24,38);c.fillText("♥ "+S.lives,800,38);return;
+ }
+ if(id==="snake"){
+  c.fillStyle="#091326";c.fillRect(0,0,900,500);c.strokeStyle="#ffffff0c";for(let x=0;x<=900;x+=30){c.beginPath();c.moveTo(x,0);c.lineTo(x,500);c.stroke()}for(let y=0;y<=480;y+=30){c.beginPath();c.moveTo(0,y);c.lineTo(900,y);c.stroke()}
+  c.fillStyle="#ffe47a";c.shadowBlur=18;c.shadowColor="#ffe47a";c.beginPath();c.arc(S.food.x*30+15,S.food.y*30+15,9,0,Math.PI*2);c.fill();c.shadowBlur=0;
+  const block=(p,col)=>{c.fillStyle=col;c.fillRect(p.x*30+2,p.y*30+2,26,26)};
+  S.snake.forEach((p,i)=>block(p,i?myColor+"bb":myColor));for(const p of Object.values(S.others||{})){(p.body||[]).forEach((q,i)=>block(q,p.color||"#af8cff"))}
+  c.fillStyle="white";c.font="bold 18px system-ui";c.fillText("STARS "+S.score,20,30);return;
+ }
+ if(id==="pong"){
+  c.fillStyle="#0a1224";c.fillRect(0,0,900,500);c.strokeStyle="#ffffff33";c.setLineDash([10,13]);c.beginPath();c.moveTo(450,0);c.lineTo(450,500);c.stroke();c.setLineDash([]);
+  c.fillStyle="#73eaff";c.fillRect(24,S.side===0?(S.myY||250)-54:(S.remoteY||250)-54,14,108);c.fillStyle="#ff86c7";c.fillRect(862,S.side===1?(S.myY||250)-54:(S.remoteY||250)-54,14,108);
+  c.fillStyle="#f4f7ff";c.shadowBlur=15;c.shadowColor="#9b88ff";c.beginPath();c.arc(S.ball.x,S.ball.y,12,0,Math.PI*2);c.fill();c.shadowBlur=0;
+  c.font="bold 48px system-ui";c.fillStyle="#83eaff";c.fillText(S.pongScore[0],380,65);c.fillStyle="#ff9bcf";c.fillText(S.pongScore[1],490,65);c.font="12px system-ui";c.fillStyle="#aebbd6";c.fillText("FIRST TO 5",405,95);return;
+ }
+}
+function setupTtt(){
+ S.board=Array(9).fill("");S.moves=0;S.done=false;
+ const ui=$("#game-ui");ui.innerHTML='<div class="prompt" id="ttt-status">X starts — make your move!</div><div class="board ttt" id="ttt-board"></div><div class="muted">The same board is shown to everyone in this room.</div><div class="controls"><button class="ctrl" id="ttt-reset">New round</button></div>';
+ renderTtt();$("#ttt-board").onclick=e=>{const b=e.target.closest("[data-cell]");if(!b||S.done||S.board[Number(b.dataset.cell)])return;const mark=S.moves%2===0?"X":"O";applyTtt(Number(b.dataset.cell),mark,true)};$("#ttt-reset").onclick=()=>{S.board=Array(9).fill("");S.moves=0;S.done=false;renderTtt();broadcastEvent({kind:"tttReset"})};
+}
+function applyTtt(cell,mark,sendIt){if(S.board[cell]||S.done)return;S.board[cell]=mark;S.moves++;const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];const win=wins.some(line=>line.every(i=>S.board[i]===mark));S.done=win||S.moves===9;renderTtt();if(sendIt)broadcastEvent({kind:"move",cell,mark});if(win)toast(mark+" wins!");else if(S.done)toast("It's a draw!")}
+function renderTtt(){const b=$("#ttt-board");if(!b)return;b.innerHTML=S.board.map((v,i)=>'<button data-cell="'+i+'" style="color:'+(v==="X"?"#78eaff":"#ff83c7")+'">'+v+'</button>').join("");const st=$("#ttt-status");if(st)st.textContent=S.done?"Round over — start a new round!":(S.moves%2===0?"X to move":"O to move")}
+function setupConnect(){
+ S.board=Array.from({length:6},()=>Array(7).fill(""));S.moves=0;S.done=false;const ui=$("#game-ui");ui.innerHTML='<div class="prompt" id="connect-status">🔴 Red starts</div><div class="board connect" id="connect-board"></div><div class="muted">Click any slot in a column to drop your disc.</div><div class="controls"><button class="ctrl" id="connect-reset">New round</button></div>';renderConnect();
+ $("#connect-board").onclick=e=>{const b=e.target.closest("[data-col]");if(!b||S.done)return;const col=Number(b.dataset.col);applyConnect(col,S.moves%2===0?"R":"Y",true)};
+ $("#connect-reset").onclick=()=>{S.board=Array.from({length:6},()=>Array(7).fill(""));S.moves=0;S.done=false;renderConnect();broadcastEvent({kind:"connectReset"})};
+}
+function applyConnect(col,mark,sendIt){if(S.done)return;let row=-1;for(let r=5;r>=0;r--)if(!S.board[r][col]){row=r;break}if(row<0)return;S.board[row][col]=mark;S.moves++;const dirs=[[1,0],[0,1],[1,1],[1,-1]];let win=false;for(const [dx,dy] of dirs){let n=1;for(const sign of [-1,1]){let x=col+dx*sign,y=row+dy*sign;while(x>=0&&x<7&&y>=0&&y<6&&S.board[y][x]===mark){n++;x+=dx*sign;y+=dy*sign}}if(n>=4)win=true}S.done=win||S.moves>=42;renderConnect();if(sendIt)broadcastEvent({kind:"drop",col,mark});if(win)toast((mark==="R"?"Red":"Yellow")+" connects four!")}
+function renderConnect(){const el=$("#connect-board");if(!el)return;el.innerHTML=Array.from({length:6},(_,r)=>Array.from({length:7},(_,c)=>'<button data-col="'+c+'" style="color:'+(S.board[r][c]==="R"?"#ff747f":S.board[r][c]==="Y"?"#ffe477":"#56698f")+'">'+(S.board[r][c]==="R"?"●":S.board[r][c]==="Y"?"●":"·")+'</button>').join("")).join("");const st=$("#connect-status");if(st)st.textContent=S.done?"Round over — start another!":(S.moves%2===0?"🔴 Red to move":"🟡 Yellow to move")}
+function setupMemory(){
+ const symbols=["🐸","🍉","🚀","🦊","🍩","🎧","🌈","🦄"];S.deck=symbols.concat(symbols).sort(()=>Math.random()-.5);S.open=[];S.matched=[];S.turns=0;const ui=$("#game-ui");ui.innerHTML='<div class="prompt" id="memory-status">Find all 8 pairs!</div><div class="board memory" id="memory-board"></div><div class="muted">Shared room deck · take turns and remember the cards.</div><div class="controls"><button class="ctrl" id="memory-reset">Shuffle deck</button></div>';renderMemory();
+ $("#memory-board").onclick=e=>{const b=e.target.closest("[data-index]");if(!b)return;applyMemory(Number(b.dataset.index),myName,true)};
+ $("#memory-reset").onclick=()=>{S.deck=symbols.concat(symbols).sort(()=>Math.random()-.5);S.open=[];S.matched=[];S.turns=0;renderMemory();broadcastEvent({kind:"memoryReset",deck:S.deck})};
+}
+function applyMemory(index,name,sendIt){if(S.matched.includes(index)||S.open.includes(index)||S.open.length>=2)return;S.open.push(index);if(sendIt)broadcastEvent({kind:"flip",index});if(S.open.length===2){S.turns++;if(S.deck[S.open[0]]===S.deck[S.open[1]]){S.matched.push(...S.open);S.open=[];toast(name+" found a pair!")}else{const pair=S.open.slice();gameTimeout=setTimeout(()=>{S.open=[];renderMemory()},900)}}renderMemory()}
+function renderMemory(){const el=$("#memory-board");if(!el)return;el.innerHTML=S.deck.map((v,i)=>'<button data-index="'+i+'" '+(S.matched.includes(i)?"disabled":"")+' style="background:'+(S.matched.includes(i)?"#245b4b":S.open.includes(i)?"#313d68":"#1a2540")+'">'+(S.matched.includes(i)||S.open.includes(i)?v:"✦")+'</button>').join("");const st=$("#memory-status");if(st)st.textContent=S.matched.length===16?"🎉 All pairs found!":"Pairs "+(S.matched.length/2)+"/8 · Turns "+S.turns}
+function setupReaction(){const ui=$("#game-ui");ui.innerHTML='<div class="prompt" id="reaction-status">Ready for reflex test?</div><p class="muted" id="reaction-help">Press START, wait for green, then click as fast as you can.</p><div style="display:grid;place-items:center;min-height:130px"><button class="big-action" id="reaction-button">⚡ START</button></div><div class="muted" id="reaction-result"></div>';$("#reaction-button").onclick=()=>{if(S.waiting){S.falseStart=true;$("#reaction-result").textContent="Too early! Wait for green.";clearTimeout(gameTimeout);S.waiting=false;return}if(S.ready){const time=Math.round(performance.now()-S.started);S.ready=false;$("#reaction-button").style.background="#ffffff09";$("#reaction-button").textContent="TRY AGAIN";$("#reaction-result").textContent="Your reaction: "+time+" ms";setScore(myId,time+"ms");broadcastEvent({kind:"score",score:time+"ms"});return}startReaction()}}
+function startReaction(){S.waiting=true;S.ready=false;S.falseStart=false;$("#reaction-button").style.background="#bd7433";$("#reaction-button").textContent="WAIT…";$("#reaction-status").textContent="Don't click yet!";$("#reaction-result").textContent="";gameTimeout=setTimeout(()=>{if(!S.waiting)return;S.waiting=false;S.ready=true;S.started=performance.now();$("#reaction-button").style.background="#197f58";$("#reaction-button").textContent="CLICK NOW!";$("#reaction-status").textContent="GO GO GO!"},1800+Math.random()*2800)}
+function setupMole(){const ui=$("#game-ui");ui.innerHTML='<div class="prompt" id="mole-status">Whack as many as you can!</div><div class="muted" id="mole-time">20 seconds</div><div style="display:grid;place-items:center;min-height:150px"><button class="big-action" id="mole-button" style="font-size:48px">🕳️</button></div><div class="controls"><button class="ctrl" id="mole-start">Start 20 second round</button></div>';$("#mole-start").onclick=()=>{S.moleScore=0;S.moleEnd=Date.now()+20000;$("#mole-button").textContent="🦔";$("#mole-status").textContent="GO! TAP THE MOLE!";if(gameInterval)clearInterval(gameInterval);gameInterval=setInterval(()=>{const left=Math.max(0,Math.ceil((S.moleEnd-Date.now())/1000));$("#mole-time").textContent=left+" seconds";if(left<=0){clearInterval(gameInterval);$("#mole-button").textContent="🏁";$("#mole-status").textContent="Round over · "+S.moleScore+" hits";setScore(myId,S.moleScore);broadcastEvent({kind:"score",score:S.moleScore+" hits"})}else $("#mole-button").textContent=Math.random()>.18?"🦔":"🕳️"},480)};$("#mole-button").onclick=hitMole}
+function hitMole(){if(!S.moleEnd||Date.now()>S.moleEnd||$("#mole-button").textContent==="🕳️")return;S.moleScore++;$("#mole-status").textContent="BONK! "+S.moleScore+" hits";if(Math.random()>.22)$("#mole-button").textContent="🦔";else $("#mole-button").textContent="🕳️";setScore(myId,S.moleScore);broadcastEvent({kind:"score",score:S.moleScore+" hits"})}
+const phrase="tiny dragons wear sunglasses on rainy mondays";
+function setupTyping(){const ui=$("#game-ui");ui.innerHTML='<div class="prompt">⌨️ Type-Off</div><p class="muted" style="font-size:15px;color:#d9e4ff;margin:12px">'+phrase+'</p><input id="typing-input" class="input-large" placeholder="Start typing the sentence…" autocomplete="off"><div class="muted" id="typing-status" style="margin-top:12px">Your progress will appear in the room.</div><div id="typing-progress" style="display:grid;gap:8px;margin:15px auto;max-width:540px"></div>';$("#typing-input").addEventListener("input",e=>{const value=e.target.value;let correct=0;while(correct<value.length&&value[correct]===phrase[correct])correct++;const pct=Math.round(correct/phrase.length*100);$("#typing-status").textContent=pct+"% complete · "+(value===phrase?"Finished!":"Keep going…");broadcastEvent({kind:"progress",pct});if(value===phrase){setScore(myId,"Done!");toast("You finished the typing race!")}});renderTypingProgress()}
+function renderTypingProgress(){const el=$("#typing-progress");if(!el)return;const all={...S.progress,[myId]:{name:myName,pct:Math.round((($("#typing-input")?.value.length||0)/phrase.length)*100),color:myColor}};el.innerHTML=Object.entries(all).map(([id,p])=>'<div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><b>'+esc(p.name)+'</b><span>'+p.pct+'%</span></div><div style="height:8px;border-radius:99px;background:#26324c;overflow:hidden"><div style="width:'+p.pct+'%;height:100%;background:'+(p.color||"#78eaff")+';border-radius:99px"></div></div></div>').join("")}
+function setupMath(){const ui=$("#game-ui");S.q=0;S.points=0;makeQuestion();ui.innerHTML='<div class="prompt" id="math-question"></div><div class="board" id="math-options" style="grid-template-columns:repeat(2,1fr);max-width:420px"></div><p class="muted" id="math-status">Question 1 of 10 · Solve fast!</p>';renderQuestion()}
+function makeQuestion(){const a=2+Math.floor(Math.random()*18),b=2+Math.floor(Math.random()*12),ops=["+","−","×"],op=ops[Math.floor(Math.random()*ops.length)];S.answer=op==="+"?a+b:op==="−"?a-b:a*b;S.question=a+" "+op+" "+b;const opts=new Set([S.answer]);while(opts.size<4)opts.add(S.answer+Math.floor(Math.random()*13)-6);S.options=[...opts].sort(()=>Math.random()-.5)}
+function renderQuestion(){if(!$("#math-question"))return;$("#math-question").textContent=S.question+" = ?";$("#math-options").innerHTML=S.options.map(v=>'<button class="ctrl" data-answer="'+v+'" style="font-size:21px;padding:16px">'+v+'</button>').join("");$("#math-status").textContent="Question "+Math.min(S.q+1,10)+" of 10 · Score "+S.points;$("#math-options").onclick=e=>{const b=e.target.closest("[data-answer]");if(!b)return;if(Number(b.dataset.answer)===S.answer)S.points+=10;S.q++;if(S.q>=10){$("#math-question").textContent="🏆 "+S.points+" points!";$("#math-options").innerHTML='<button class="ctrl" id="math-again">Play again</button>';$("#math-again").onclick=()=>{S.q=0;S.points=0;makeQuestion();renderQuestion()};setScore(myId,S.points);broadcastEvent({kind:"score",score:S.points+" pts"});$("#math-status").textContent="Game finished · challenge your friends again!";return}makeQuestion();renderQuestion()}}
+
+const IMPOSTER_STATIONS=[{id:"reactor",name:"Reactor",x:145,y:125},{id:"comms",name:"Communications",x:450,y:115},{id:"engines",name:"Engines",x:755,y:365}];
+function setupImposter(){
+ S.canvas=document.createElement("canvas");S.canvas.id="game-canvas";S.canvas.width=900;S.canvas.height=500;S.ctx=S.canvas.getContext("2d");
+ S.role=null;S.completed=[];S.imposterState=null;S.lastMoveSent=0;S.lastPosition=null;S.lastFrame=performance.now();
+ stage.innerHTML='<div class="imposter-hud" id="imposter-hud"></div><canvas id="game-canvas" width="900" height="500"></canvas><p class="game-help">Move with WASD or arrow keys. Crew: visit glowing stations and complete tasks. Imposters: blend in, sabotage nearby players, and avoid the vote.</p><div class="controls" id="game-controls"></div>';
+ S.canvas=$("#game-canvas");S.ctx=S.canvas.getContext("2d");
+ addControls([{id:"imposter-up",label:"↑"},{id:"imposter-left",label:"←"},{id:"imposter-down",label:"↓"},{id:"imposter-right",label:"→"},{id:"imposter-task",label:"🧰 Do task"},{id:"imposter-kill",label:"☠️ Sabotage"},{id:"imposter-report",label:"📣 Report / meeting"},{id:"imposter-start",label:"🚀 Start round"}]);
+ $("#imposter-hud").onclick=e=>{const b=e.target.closest("[data-vote]");if(b){send({type:"imposterAction",action:"vote",target:b.dataset.vote});toast("Vote submitted")}};
+ send({type:"imposterAction",action:"sync"});
+ function frame(t){if(activeGame!=="imposter")return;const dt=Math.min(40,t-S.lastFrame);S.lastFrame=t;updateImposter(t,dt);drawImposter();raf=requestAnimationFrame(frame)}
+ raf=requestAnimationFrame(frame);renderImposterHud();
+}
+function imposterSend(action,extra){send(Object.assign({type:"imposterAction",action},extra||{}))}
+function getMyImposterPlayer(){return S.imposterState&&S.imposterState.players?S.imposterState.players.find(p=>p.id===serverPlayerId):null}
+function updateImposter(t,dt){
+ const state=S.imposterState,me=getMyImposterPlayer();if(!state||state.phase!=="active"||!me||!me.alive)return;
+ let dx=0,dy=0;if(keys.arrowleft||keys.a)dx--;if(keys.arrowright||keys.d)dx++;if(keys.arrowup||keys.w)dy--;if(keys.arrowdown||keys.s)dy++;
+ if(dx||dy){const mag=Math.hypot(dx,dy)||1;const x=Math.max(35,Math.min(865,me.x+(dx/mag)*dt*.22));const y=Math.max(40,Math.min(460,me.y+(dy/mag)*dt*.22));
+  if(!S.lastPosition||Math.hypot(x-S.lastPosition.x,y-S.lastPosition.y)>2){S.lastPosition={x,y};if(t-S.lastMoveSent>75){imposterSend("move",{x,y});S.lastMoveSent=t}}
+ }
+}
+function drawImposter(){
+ const c=S.ctx;if(!c||!S.canvas)return;const st=S.imposterState;c.clearRect(0,0,900,500);
+ const bg=c.createLinearGradient(0,0,900,500);bg.addColorStop(0,"#0d1730");bg.addColorStop(1,"#07101e");c.fillStyle=bg;c.fillRect(0,0,900,500);
+ c.strokeStyle="#ffffff0a";c.lineWidth=1;for(let x=0;x<900;x+=30){c.beginPath();c.moveTo(x,0);c.lineTo(x,500);c.stroke()}for(let y=0;y<500;y+=30){c.beginPath();c.moveTo(0,y);c.lineTo(900,y);c.stroke()}
+ c.lineCap="round";c.strokeStyle="#293c5d";c.lineWidth=82;c.beginPath();c.moveTo(450,250);c.lineTo(145,125);c.moveTo(450,250);c.lineTo(450,115);c.moveTo(450,250);c.lineTo(755,365);c.stroke();
+ const rooms=[{x:45,y:45,w:210,h:150,n:"REACTOR BAY"},{x:345,y:40,w:210,h:150,n:"COMMS DECK"},{x:650,y:285,w:210,h:150,n:"ENGINE ROOM"},{x:340,y:195,w:220,h:140,n:"CENTRAL HUB"}];
+ rooms.forEach(r=>{c.fillStyle="#15233c";c.strokeStyle="#58749c";c.lineWidth=3;c.beginPath();c.roundRect(r.x,r.y,r.w,r.h,18);c.fill();c.stroke();c.fillStyle="#7288ae";c.font="bold 12px system-ui";c.fillText(r.n,r.x+14,r.y+22)});
+ IMPOSTER_STATIONS.forEach(s=>{const done=S.completed&&S.completed.includes(s.id);c.fillStyle=done?"#3ce6a3":"#ac83ff";c.shadowBlur=20;c.shadowColor=done?"#3ce6a3":"#ac83ff";c.beginPath();c.arc(s.x,s.y,18,0,Math.PI*2);c.fill();c.shadowBlur=0;c.fillStyle="#091020";c.font="bold 13px system-ui";c.textAlign="center";c.fillText(done?"✓":"⚙",s.x,s.y+5);c.fillStyle="#d8e5ff";c.font="bold 11px system-ui";c.fillText(s.name,s.x,s.y+34);c.textAlign="left"});
+ if(st){
+  (st.bodies||[]).forEach(b=>{c.fillStyle="#ff617d";c.shadowBlur=16;c.shadowColor="#ff476d";c.beginPath();c.arc(b.x,b.y,15,0,Math.PI*2);c.fill();c.shadowBlur=0;c.fillStyle="#30101b";c.font="bold 12px system-ui";c.textAlign="center";c.fillText("✕",b.x,b.y+4);c.textAlign="left"});
+  (st.players||[]).forEach(p=>{if(!p.alive||p.spectator)return;c.fillStyle=p.color||"#82dcff";c.shadowBlur=p.id===serverPlayerId?18:9;c.shadowColor=p.color||"#82dcff";c.beginPath();c.arc(p.x,p.y,15,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle=p.id===serverPlayerId?"#ffffff":"#0a1224";c.lineWidth=p.id===serverPlayerId?3:2;c.stroke();c.fillStyle="#0b1222";c.font="bold 11px system-ui";c.textAlign="center";c.fillText((p.name||"?").slice(0,1).toUpperCase(),p.x,p.y+4);c.fillStyle="#eaf1ff";c.font="bold 10px system-ui";c.fillText(p.name,p.x,p.y-23);c.textAlign="left"});
+  c.fillStyle="#e9f0ff";c.font="bold 15px system-ui";c.fillText("CREW TASKS  "+st.tasksDone+"/"+st.tasksTotal,22,482);
+ }else{c.fillStyle="#dce7ff";c.font="bold 26px system-ui";c.textAlign="center";c.fillText("WAITING FOR CREW…",450,260);c.textAlign="left"}
+}
+function renderImposterHud(){
+ const el=$("#imposter-hud");if(!el)return;const st=S.imposterState,me=getMyImposterPlayer(),role=S.role;
+ if(!st){el.innerHTML='<div class="imposter-role"><b>🛸 IMPOSTER HUNT</b><span>Waiting for the room…</span></div><div class="muted">Need at least 4 players · up to 16 in one room.</div>';return}
+ const alive=(st.players||[]).filter(p=>p.alive&&!p.spectator).length;
+ const roleText=role==="imposter"?"☠️ YOU ARE AN IMPOSTER":role==="crew"?"🧑‍🚀 YOU ARE CREW":role==="spectator"?"👀 SPECTATING":"🛸 ROLE ASSIGNING…";
+ const roleColor=role==="imposter"?"#ff8ca8":"#82eac3";
+ let html='<div class="imposter-role"><b style="color:'+roleColor+'">'+roleText+'</b><span>'+alive+' alive · '+(st.players||[]).length+'/16</span></div>';
+ if(st.phase==="lobby")html+='<div class="muted">Crew up! 4 or more players are needed to start a round. The game picks secret imposters.</div><div class="controls"><button class="primary" id="imp-start">🚀 Start game</button></div>';
+ if(st.phase==="active"){
+  html+='<div class="muted">'+(role==="imposter"?"Blend in. Get close to a crewmate and sabotage them.":"Finish your station tasks. Watch for suspicious movement.")+' · Tasks '+st.tasksDone+'/'+st.tasksTotal+'</div>';
+  if(role==="crew")html+='<div class="imposter-votes"><button id="imp-task">🧰 Complete nearby task</button><button id="imp-report">📣 Report body / meeting</button></div>';
+  if(role==="imposter")html+='<div class="imposter-votes"><button id="imp-kill">☠️ Sabotage nearby</button><button id="imp-report">📣 Report body / meeting</button></div>';
+  if(role==="spectator")html+='<div class="muted">You joined after the round started. Watch this round, then join the next one.</div>';
+ }
+ if(st.phase==="discussion"){
+  html+='<div class="muted">🚨 DISCUSSION TIME · '+st.votesCast+'/'+alive+' votes cast. Who seems suspicious?</div><div class="imposter-votes" id="imposter-votes">';
+  (st.players||[]).filter(p=>p.alive&&!p.spectator&&p.id!==serverPlayerId).forEach(p=>{html+='<button data-vote="'+esc(p.id)+'">🗳️ '+esc(p.name)+'</button>'});
+  html+='<button data-vote="skip">Skip vote</button></div>';
+ }
+ if(st.phase==="ended")html+='<div class="prompt">'+(st.winner==="crew"?"🎉 CREW WINS!":"☠️ IMPOSTERS WIN!")+'</div><div class="muted">'+esc(st.lastEjected||"Round complete")+'</div><div class="controls"><button class="primary" id="imp-start">🔁 Play again</button></div>';
+ el.innerHTML=html;
+ const start=$("#imp-start");if(start)start.onclick=()=>imposterSend("start");
+ const task=$("#imp-task");if(task)task.onclick=()=>{const me=getMyImposterPlayer();if(!me)return;const s=IMPOSTER_STATIONS.slice().sort((a,b)=>Math.hypot(a.x-me.x,a.y-me.y)-Math.hypot(b.x-me.x,b.y-me.y))[0];if(!s||Math.hypot(s.x-me.x,s.y-me.y)>72){toast("Move next to a glowing station first");return}imposterSend("task",{station:s.id})};
+ const kill=$("#imp-kill");if(kill)kill.onclick=()=>imposterSend("kill");
+ const report=$("#imp-report");if(report)report.onclick=()=>imposterSend("report");
+}
+function setupMostLikely(){
+ const prompts=["Who would accidentally become famous for something silly?","Who would survive longest on a deserted island?","Who is most likely to laugh at the worst possible moment?","Who would accidentally start a weird trend?","Who would befriend an alien first?","Who is most likely to get lost using GPS?","Who would win a reality show?","Who is most likely to adopt 12 pets?","Who would become a secret superhero?","Who is most likely to eat dessert before dinner?","Who would accidentally send a screenshot to the group chat?","Who would be the best person to survive a zombie movie?"];
+ S.prompt=prompts[Math.floor(Math.random()*prompts.length)];S.votes={};renderMostLikely();
+}
+function renderMostLikely(){
+ const ui=$("#game-ui");if(!ui)return;const tally={};Object.values(S.votes||{}).forEach(id=>tally[id]=(tally[id]||0)+1);
+ ui.innerHTML='<div class="prompt">👀 MOST LIKELY TO…</div><div class="prompt" style="color:#ffd78c">'+esc(S.prompt||"Pick a prompt")+'</div><p class="muted">'+Object.keys(S.votes||{}).length+' votes · Pick the friend who fits best.</p><div class="board" style="grid-template-columns:repeat(2,minmax(0,1fr));max-width:600px">'+players.map(p=>'<button class="ctrl" data-target="'+esc(p.id)+'" style="font-size:14px;padding:13px">'+esc(p.name)+'<br><small style="color:#9ecfff">'+(tally[p.id]||0)+' votes</small></button>').join("")+'</div><div class="controls"><button class="ctrl" id="ml-next">🎲 New prompt</button></div>';
+ ui.onclick=e=>{const target=e.target.closest("[data-target]");if(target){S.votes[serverPlayerId]=target.dataset.target;broadcastEvent({kind:"vote",target:target.dataset.target});renderMostLikely()}};
+ const next=$("#ml-next");if(next)next.onclick=()=>{const prompts=["Who would accidentally become famous for something silly?","Who would survive longest on a deserted island?","Who is most likely to laugh at the worst possible moment?","Who would accidentally start a weird trend?","Who would befriend an alien first?","Who is most likely to get lost using GPS?","Who would win a reality show?","Who is most likely to adopt 12 pets?","Who would become a secret superhero?","Who is most likely to eat dessert before dinner?","Who would accidentally send a screenshot to the group chat?","Who would be the best person to survive a zombie movie?"];S.prompt=prompts[Math.floor(Math.random()*prompts.length)];S.votes={};renderMostLikely();broadcastEvent({kind:"prompt",prompt:S.prompt})};
+}
+function setupWouldYou(){
+ const prompts=[["Have a pet dragon 🐉","Have a robot best friend 🤖"],["Only communicate in song 🎤","Only communicate in dance 💃"],["Explore the deep ocean 🌊","Explore outer space 🚀"],["Be invisible for a day 👻","Read minds for a day 🧠"],["Unlimited pizza 🍕","Unlimited tacos 🌮"],["Live in a giant treehouse 🌳","Live in an underwater base 🫧"],["Always be 10 minutes early ⏰","Always be 20 minutes late 😅"],["Fight one horse-sized duck 🦆","Fight 100 duck-sized horses 🐴"],["Have a rewind button ⏪","Have a pause button ⏸️"],["Never charge your phone 🔋","Never need sleep 🌙"]];
+ S.prompt=prompts[Math.floor(Math.random()*prompts.length)];S.votes={};renderWouldYou();
+}
+function renderWouldYou(){
+ const ui=$("#game-ui");if(!ui)return;const a=S.prompt||["Option A","Option B"];const votes=Object.values(S.votes||{});const countA=votes.filter(x=>x==="A").length,countB=votes.filter(x=>x==="B").length;
+ ui.innerHTML='<div class="prompt">🤔 WOULD YOU RATHER…</div><p class="muted">'+votes.length+' room votes</p><div class="social-vote"><button data-choice="A">A · '+esc(a[0])+'<br><small>'+countA+' votes</small></button><button data-choice="B">B · '+esc(a[1])+'<br><small>'+countB+' votes</small></button></div><div class="controls"><button class="ctrl" id="wyr-next">🎲 Next dilemma</button></div>';
+ ui.onclick=e=>{const c=e.target.closest("[data-choice]");if(c){S.votes[serverPlayerId]=c.dataset.choice;broadcastEvent({kind:"vote",choice:c.dataset.choice});renderWouldYou()}};
+ const next=$("#wyr-next");if(next)next.onclick=()=>{const ps=[["Have a pet dragon 🐉","Have a robot best friend 🤖"],["Only communicate in song 🎤","Only communicate in dance 💃"],["Explore the deep ocean 🌊","Explore outer space 🚀"],["Be invisible for a day 👻","Read minds for a day 🧠"],["Unlimited pizza 🍕","Unlimited tacos 🌮"],["Live in a giant treehouse 🌳","Live in an underwater base 🫧"],["Always be 10 minutes early ⏰","Always be 20 minutes late 😅"],["Fight one horse-sized duck 🦆","Fight 100 duck-sized horses 🐴"],["Have a rewind button ⏪","Have a pause button ⏸️"],["Never charge your phone 🔋","Never need sleep 🌙"]];S.prompt=ps[Math.floor(Math.random()*ps.length)];S.votes={};renderWouldYou();broadcastEvent({kind:"prompt",prompt:S.prompt})};
+}
+
+
+const WORD_BANK=[];
+function setupWordGuess(){
+ baseStage("Everyone sees the same secret word clue. Type guesses below; the first correct guess wins the round and earns points.");
+ S.wordState=null;const ui=$("#game-ui");ui.innerHTML='<div class="word-panel" id="word-panel"><div class="eyebrow">🔤 ROOM WORD CHALLENGE</div><div class="prompt">Guess the Word</div><div class="muted">Syncing the room game…</div></div>';
+ send({type:"wordAction",action:"sync"});gameInterval=setInterval(()=>{if(activeGame==="wordguess")renderWordGuess()},1000);
+}
+function renderWordGuess(){
+ const ui=$("#word-panel");if(!ui)return;const st=S.wordState;if(!st){ui.innerHTML='<div class="prompt">🔤 Guess the Word</div><div class="muted">Waiting for the game server…</div>';return}
+ const running=st.phase==="active",left=running&&st.deadline?Math.max(0,Math.ceil((st.deadline-Date.now())/1000)):0;
+ const scores=(st.scores||[]).map(x=>'<span class="word-chip">🏅 '+esc(x.name)+' · '+x.score+'</span>').join("");
+ const guesses=(st.recentGuesses||[]).map(x=>'<div class="word-guess"><b>'+esc(x.name)+'</b>: '+esc(x.text)+(x.correct?' <span style="color:#77edba">✓ solved!</span>':'')+'</div>').join("");
+ let main="";
+ if(st.phase==="lobby")main='<div class="word-clue">The room is ready for a word challenge. Start a round and race to solve the clue.</div><button class="primary" id="word-start">🎲 Start word round</button>';
+ if(running)main='<div class="word-chip">'+esc(st.category||"Mystery category")+'</div><div class="word-clue">'+esc(st.clue||"A mystery word is waiting…")+'<br><span style="color:#8ceaff;font-size:13px;letter-spacing:.18em">'+esc(st.mask||"??????")+'</span></div><p class="muted">'+left+' seconds left · '+st.guessCount+' guesses submitted</p><form class="word-entry" id="word-form"><input id="word-input" maxlength="32" autocomplete="off" placeholder="Type your guess…"><button>GUESS ↗</button></form>';
+ if(st.phase==="ended")main='<div class="word-clue">'+(st.winner?'<span style="color:#7aefb9">'+esc(st.winner)+' solved it!</span><br>':'Time is up!<br>')+'The word was <b style="color:#a9eaff">'+esc(st.answer||"")+'</b></div><button class="primary" id="word-next">🔁 Next word</button>';
+ ui.innerHTML='<div class="eyebrow">🔤 ROOM WORD CHALLENGE</div><div class="prompt">Guess the Word</div>'+main+'<div class="word-guesses">'+(guesses||'<div class="muted">No guesses yet. Be the first!</div>')+'</div><div style="margin-top:12px">'+scores+'</div>';
+ const start=$("#word-start");if(start)start.onclick=()=>send({type:"wordAction",action:"start"});
+ const next=$("#word-next");if(next)next.onclick=()=>send({type:"wordAction",action:"start"});
+ const form=$("#word-form");if(form)form.onsubmit=e=>{e.preventDefault();const input=$("#word-input"),guess=input.value.trim();if(!guess)return;send({type:"wordAction",action:"guess",guess});input.value="";input.focus()};
+}
+function setupMindMeld(){
+ baseStage("Everybody secretly answers the same prompt. When the room reveals, matching answers earn points. Try to get inside your friends' heads.");
+ S.mindState=null;S.mindSubmitted=false;const ui=$("#game-ui");ui.innerHTML='<div class="mind-panel" id="mind-panel"><div class="eyebrow">🧠 THINK ALIKE</div><div class="prompt">Mind Meld</div><div class="muted">Syncing the room…</div></div>';
+ send({type:"mindAction",action:"sync"});
+}
+function renderMindMeld(){
+ const ui=$("#mind-panel");if(!ui)return;const st=S.mindState;if(!st){ui.innerHTML='<div class="prompt">🧠 Mind Meld</div><div class="muted">Waiting for the room…</div>';return}
+ const score=(st.scores||[]).map(x=>'<span class="word-chip">🧠 '+esc(x.name)+' · '+x.score+'</span>').join("");let main="";
+ if(st.phase==="lobby")main='<div class="word-clue">You all get the same question. Submit one answer without seeing anyone else’s. Matching answers score!</div><button class="primary" id="mind-start">🧠 Start a round</button>';
+ if(st.phase==="answering"){main='<div class="word-clue">'+esc(st.prompt)+'</div><p class="muted">'+st.responsesCount+'/'+st.playerCount+' players answered. Answers stay secret until reveal.</p>';main+=S.mindSubmitted?'<div class="word-chip" style="color:#86efbb">✓ Answer locked in — wait for everyone else</div>':'<form class="word-entry" id="mind-form"><input id="mind-input" class="mind-answer" maxlength="40" placeholder="Your answer…" autocomplete="off"><button>LOCK IN</button></form>'}
+ if(st.phase==="reveal")main='<div class="word-clue">✨ The room has spoken! Matching answers earn points.</div><div style="display:grid;gap:8px;margin:12px auto;max-width:540px">'+(st.answers||[]).map(x=>'<div class="word-guess"><b>'+esc(x.name)+'</b>: '+esc(x.answer)+' <span style="color:#8ceaff">+'+x.points+'</span></div>').join("")+'</div><button class="primary" id="mind-next">🔁 Next mind meld</button>';
+ ui.innerHTML='<div class="eyebrow">🧠 THINK ALIKE</div><div class="prompt">Mind Meld</div>'+main+'<div style="margin-top:12px">'+score+'</div>';
+ const start=$("#mind-start");if(start)start.onclick=()=>send({type:"mindAction",action:"start"});
+ const next=$("#mind-next");if(next)next.onclick=()=>send({type:"mindAction",action:"start"});
+ const form=$("#mind-form");if(form)form.onsubmit=e=>{e.preventDefault();const answer=$("#mind-input").value.trim();if(!answer)return;send({type:"mindAction",action:"submit",answer});S.mindSubmitted=true;renderMindMeld()};
+}
+function setupSocial3D(){
+ baseStage("A shared 3D island hangout. Walk with WASD or arrow keys, drag to look around, collect glowing tokens, and use wave / dance to say hi.");
+ const ui=$("#game-ui");ui.innerHTML='<div class="three-shell"><div class="three-hud"><span class="three-pill">🌅 SUNSET ISLAND</span><span class="three-pill" id="three-score">✨ 0 / 10 tokens</span><span class="three-pill" id="three-nearby">👥 '+players.length+' here</span></div><div class="three-world" id="three-world"><div class="three-load">🌴 Building the island world…</div></div><div class="three-message">WASD / arrows to walk · SPACE to hop · drag mouse to look · collect light tokens · wave & dance</div></div>';
+ S.remote3D={};S.local3D={x:0,z:8,yaw:0,y:0,tokens:0,emote:"",emoteUntil:0};S.threeCleanup=null;
+ addControls([{id:"3d-wave",label:"👋 Wave"},{id:"3d-dance",label:"🪩 Dance"},{id:"3d-forward",label:"↑ Walk"},{id:"3d-left",label:"←"},{id:"3d-jump",label:"Hop"},{id:"3d-right",label:"→"},{id:"3d-back",label:"↓"}]);
+ (async()=>{
+  try{
+   const T=await import("https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js");if(activeGame!=="social3d")return;
+   const host=$("#three-world");if(!host)return;host.innerHTML="";
+   const scene=new T.Scene();scene.background=new T.Color(0x91b7cd);scene.fog=new T.Fog(0x91b7cd,48,100);
+   const camera=new T.PerspectiveCamera(58,1,.1,160),renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;host.appendChild(renderer.domElement);
+   const mat=(c,r=.8,m=0)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+   scene.add(new T.HemisphereLight(0xd7edff,0x536344,2));const sun=new T.DirectionalLight(0xffdfb0,3.3);sun.position.set(-22,35,18);sun.castShadow=true;sun.shadow.mapSize.set(1536,1536);scene.add(sun);
+   const water=new T.Mesh(new T.PlaneGeometry(160,160),mat(0x317e95,.3,.1));water.rotation.x=-Math.PI/2;water.position.y=-1;scene.add(water);
+   const island=new T.Mesh(new T.CylinderGeometry(34,36,2.7,80),mat(0x95744f));island.position.y=-.1;island.receiveShadow=true;scene.add(island);
+   const grass=new T.Mesh(new T.CylinderGeometry(32,33,.5,80),mat(0x66875a));grass.position.y=1.35;grass.receiveShadow=true;scene.add(grass);
+   const add=(geo,m,x,y,z)=>{const o=new T.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o};
+   const wood=mat(0x8b573d),stone=mat(0x99998b),roof=mat(0x3b5260),leaf=mat(0x36704d),leaf2=mat(0x5d8b59);
+   add(new T.BoxGeometry(18,.15,3),stone,0,1.65,-7);add(new T.BoxGeometry(5,.15,35),stone,0,1.65,2);
+   for(const x of [-7,7])for(const z of [-13,-2])add(new T.CylinderGeometry(.24,.32,5,10),wood,x,4,z);
+   const roofMesh=add(new T.ConeGeometry(11,3.4,4),roof,0,7.2,-7.5);roofMesh.rotation.y=Math.PI/4;
+   add(new T.BoxGeometry(15,.28,12),wood,0,1.9,-7.5);
+   add(new T.CylinderGeometry(5,5,.3,40),mat(0x4d9ca9,.25,.18),17,1.55,-13);
+   add(new T.CircleGeometry(4.6,40),mat(0x5cb9cc,.2,.18),17,1.73,-13).rotation.x=-Math.PI/2;
+   const trees=[[-25,-20],[-25,0],[-23,19],[24,-22],[25,0],[25,19],[-10,25],[10,25],[-17,-27],[16,-28],[-30,9],[30,9],[-12,-20],[12,-25],[-29,-8],[29,-8]];
+   for(let i=0;i<trees.length;i++){const [x,z]=trees[i],h=4.6+i%4*.4;add(new T.CylinderGeometry(.18,.38,h,9),wood,x,1.4+h/2,z);for(let j=0;j<5;j++)add(new T.SphereGeometry(1.5,9,8),j%2?leaf:leaf2,x+Math.sin(j*1.4)*1.1,1.3+h,z+Math.cos(j*1.4)*1.1)}
+   for(const [x,z] of [[-4,4],[4,4],[-4,-17],[4,-17],[-14,0],[14,0]]){add(new T.CylinderGeometry(.08,.12,3,8),roof,x,3,z);const bulb=add(new T.SphereGeometry(.25,12,10),new T.MeshStandardMaterial({color:0xffdf9b,emissive:0xffa943,emissiveIntensity:1.8}),x,4.55,z);const light=new T.PointLight(0xffbd75,8,7);light.position.copy(bulb.position);scene.add(light)}
+   const tokens=[];for(let i=0;i<10;i++){const a=i/10*Math.PI*2,x=Math.cos(a)*(12+i%2*5),z=Math.sin(a)*(12+i%2*5),gem=add(new T.OctahedronGeometry(.62),new T.MeshStandardMaterial({color:0x8df3ff,emissive:0x24b8dd,emissiveIntensity:1.5,metalness:.5,roughness:.2}),x,2.8,z);tokens.push({mesh:gem,x,z,found:false})}
+   function avatar(color){const g=new T.Group(),cloth=mat(color,.48,.1),skin=mat(0xe2b99c),body=add(new T.CapsuleGeometry(.52,.9,5,9),cloth,0,1.1,0),head=add(new T.SphereGeometry(.42,16,12),skin,0,2,0),hair=add(new T.SphereGeometry(.45,12,9,0,Math.PI*2,0,Math.PI*.5),mat(0x293247),0,2.18,0),armL=add(new T.CapsuleGeometry(.13,.56,4,8),cloth,-.62,1.25,0),armR=add(new T.CapsuleGeometry(.13,.56,4,8),cloth,.62,1.25,0);g.add(body,head,hair,armL,armR);g.userData={armL,armR};scene.add(g);return g}
+   const local=avatar(myColor),remote=new Map();let yaw=0,drag=false,lastX=0,lastSent=0,lastTime=performance.now(),vy=0;
+   const resize=()=>{const w=host.clientWidth||700,h=host.clientHeight||400;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};resize();const ro=new ResizeObserver(resize);ro.observe(host);
+   renderer.domElement.addEventListener("pointerdown",e=>{drag=true;lastX=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});renderer.domElement.addEventListener("pointerup",()=>drag=false);renderer.domElement.addEventListener("pointercancel",()=>drag=false);renderer.domElement.addEventListener("pointermove",e=>{if(drag){yaw-=(e.clientX-lastX)*.006;lastX=e.clientX}});
+   function frame(t){if(activeGame!=="social3d")return;const dt=Math.min(.05,(t-lastTime)/1000);lastTime=t;let f=0,s=0;if(keys.w||keys.arrowup)f++;if(keys.s||keys.arrowdown)f--;if(keys.a||keys.arrowleft)s--;if(keys.d||keys.arrowright)s++;const len=Math.hypot(f,s)||1;if(f||s){const v=7*dt;S.local3D.x+=((-Math.sin(yaw)*f+Math.cos(yaw)*s)/len)*v;S.local3D.z+=((-Math.cos(yaw)*f-Math.sin(yaw)*s)/len)*v;S.local3D.x=Math.max(-29,Math.min(29,S.local3D.x));S.local3D.z=Math.max(-29,Math.min(29,S.local3D.z))}
+    if(keys[" "]&&S.local3D.y<=0)vy=7;vy-=18*dt;S.local3D.y=Math.max(0,S.local3D.y+vy*dt);if(S.local3D.y===0)vy=0;
+    local.position.set(S.local3D.x,1.65+S.local3D.y,S.local3D.z);local.rotation.y=yaw;S.local3D.yaw=yaw;
+    if(S.local3D.emoteUntil>t&&S.local3D.emote==="wave")local.userData.armR.rotation.z=-1.1+Math.sin(t*.02)*.5;else if(S.local3D.emoteUntil>t&&S.local3D.emote==="dance"){local.userData.armL.rotation.z=-.9+Math.sin(t*.014)*.4;local.userData.armR.rotation.z=.9-Math.sin(t*.014)*.4}else{local.userData.armL.rotation.z=-.18;local.userData.armR.rotation.z=.18}
+    camera.position.lerp(new T.Vector3(S.local3D.x-Math.sin(yaw)*8,5+S.local3D.y,S.local3D.z+Math.cos(yaw)*8),.12);camera.lookAt(S.local3D.x,2+S.local3D.y,S.local3D.z);
+    const now=Date.now();for(const [id,p] of Object.entries(S.remote3D||{})){if(!players.some(a=>a.id===id)){const old=remote.get(id);if(old){scene.remove(old);remote.delete(id)}continue}let g=remote.get(id);if(!g){g=avatar(p.color);remote.set(id,g)}g.position.lerp(new T.Vector3(p.x||0,1.65+(p.y||0),p.z||0),.22);g.rotation.y=p.yaw||0;if(p.emoteUntil>now&&p.emote==="wave")g.userData.armR.rotation.z=-1.1+Math.sin(t*.02)*.5;else if(p.emoteUntil>now&&p.emote==="dance"){g.userData.armL.rotation.z=-.9+Math.sin(t*.014)*.4;g.userData.armR.rotation.z=.9-Math.sin(t*.014)*.4}else{g.userData.armL.rotation.z=-.18;g.userData.armR.rotation.z=.18}}
+    for(const token of tokens){token.mesh.rotation.y+=dt;token.mesh.position.y=2.8+Math.sin(t*.002+token.x)*.2;if(!token.found&&Math.hypot(S.local3D.x-token.x,S.local3D.z-token.z)<1.4){token.found=true;token.mesh.visible=false;S.local3D.tokens++;$("#three-score").textContent="✨ "+S.local3D.tokens+" / 10 tokens";broadcastEvent({kind:"score",score:S.local3D.tokens+" tokens"})}}
+    if(now-lastSent>100){broadcastEvent({kind:"position",x:S.local3D.x,z:S.local3D.z,y:S.local3D.y,yaw,emote:S.local3D.emote,emoteUntil:S.local3D.emoteUntil});lastSent=now}
+    $("#three-nearby").textContent="👥 "+players.length+" here";renderer.render(scene,camera);raf=requestAnimationFrame(frame)}
+   raf=requestAnimationFrame(frame);S.threeCleanup=()=>{ro.disconnect();renderer.dispose();renderer.domElement.remove();remote.clear()};
+  }catch(err){const host=$("#three-world");if(host)host.innerHTML='<div class="three-load">The 3D engine could not load. Check your internet connection and reopen the game.<br><small>'+esc(err&&err.message||"3D loading error")+'</small></div>'}
+ })();
+}
+function sendSocialEmote(emote){if(!S.local3D)return;S.local3D.emote=emote;S.local3D.emoteUntil=Date.now()+2200;broadcastEvent({kind:"emote",x:S.local3D.x,z:S.local3D.z,yaw:S.local3D.yaw||0,emote,emoteUntil:S.local3D.emoteUntil});toast(emote==="wave"?"👋 You waved!":"🪩 Dance party!")}
+
+
+function setupObjectImposter(){baseStage("3–16 players. One person is secretly the imposter. Everyone else receives the same object. Crewmates write one clue without naming it; then the imposter gets two guesses.");S.objectState=null;S.objectPrivate=null;$("#game-ui").innerHTML='<div class="object-panel" id="object-panel"><div class="eyebrow">🕵️ SECRET OBJECT GAME</div><div class="prompt">Object Imposter</div><div class="muted">Syncing the room…</div></div>';send({type:"objectAction",action:"sync"})}
+function renderObjectImposter(){
+ const ui=$("#object-panel");if(!ui)return;const st=S.objectState,priv=S.objectPrivate;if(!st){ui.innerHTML='<div class="prompt">🕵️ Object Imposter</div><p class="muted">Waiting for room state…</p>';return}
+ const clueBlock='<div class="social-card"><b>🗣️ Crew clues</b><div class="clue-feed">'+((st.clues||[]).map(c=>'<div class="clue-line"><b>'+esc(c.name)+'</b>'+esc(c.clue)+'</div>').join("")||'<div class="muted">No clues yet…</div>')+'</div></div>';
+ let body="";
+ if(st.phase==="lobby")body='<div class="social-card">One secret object. One hidden imposter. Everyone else gives a clue without saying its name. The imposter gets two guesses.</div><button class="primary" id="object-start">🎭 Start a round</button><p class="muted">At least 3 players · exactly 1 imposter</p>';
+ if(st.phase==="clues"){
+  body=priv&&priv.role==="crew"?'<div class="social-card"><div class="eyebrow">YOUR SECRET OBJECT</div><div class="secret-word">'+esc(priv.objectWord||"…")+'</div><p class="muted">Write one helpful clue. Do NOT type the object name or exact phrase.</p></div>':priv&&priv.role==="imposter"?'<div class="social-card"><div class="eyebrow">🚨 YOU ARE THE IMPOSTER</div><div class="secret-word">???</div><p class="muted">You do not know the object. Read the clues and work it out.</p></div>':'<div class="social-card">You joined during a round, so you are a spectator until next round.</div>';
+  const submitted=(st.clues||[]).some(x=>x.id===serverPlayerId);
+  if(priv&&priv.role==="crew"&&!submitted)body+='<form class="social-form" id="object-clue-form"><input class="social-input" id="object-clue-input" maxlength="90" placeholder="Describe it without naming it…"><button class="primary">SEND CLUE</button></form>';
+  else if(priv&&priv.role==="crew")body+='<p class="word-chip">✓ Clue submitted. Wait for the others…</p>';
+  body+='<p class="muted">'+st.submittedCount+'/'+st.crewCount+' crew clues submitted</p>'+clueBlock;
+ }
+ if(st.phase==="guessing")body=(priv&&priv.role==="imposter"?'<div class="social-card"><div class="eyebrow">🕵️ YOUR TURN</div><div class="secret-word">'+st.guessesRemaining+' guesses left</div><p class="muted">What object did the crew receive?</p></div><form class="social-form" id="object-guess-form"><input class="social-input" id="object-guess-input" maxlength="50" placeholder="Guess the object…"><button class="primary">GUESS</button></form>':'<div class="social-card"><b>🤫 The imposter is thinking…</b><p class="muted">Discuss in live chat. The imposter has '+st.guessesRemaining+' guesses left.</p></div>')+clueBlock;
+ if(st.phase==="ended")body='<div class="social-card"><div class="eyebrow">ROUND OVER</div><div class="prompt">'+(st.winner==="imposter"?"🕵️ IMPOSTER WINS!":"🎉 CREW WINS!")+'</div><p>'+esc(st.message||"Round complete.")+'</p><div class="secret-word">'+esc(st.answer||"")+'</div><p class="muted">The secret object</p>'+(st.roles||[]).map(r=>'<div class="clue-line"><b>'+esc(r.name)+'</b> · '+(r.role==="imposter"?"🕵️ Imposter":"🧑‍🚀 Crewmate")+'</div>').join("")+'</div><button class="primary" id="object-next">🔁 Play again</button>'+clueBlock;
+ ui.innerHTML='<div class="eyebrow">🕵️ SECRET OBJECT GAME</div><div class="prompt">Object Imposter</div>'+body;
+ const start=$("#object-start");if(start)start.onclick=()=>send({type:"objectAction",action:"start"});
+ const next=$("#object-next");if(next)next.onclick=()=>send({type:"objectAction",action:"start"});
+ const cf=$("#object-clue-form");if(cf)cf.onsubmit=e=>{e.preventDefault();const clue=$("#object-clue-input").value.trim();if(clue){send({type:"objectAction",action:"clue",clue});cf.innerHTML='<p class="word-chip">✓ Clue submitted</p>'}};
+ const gf=$("#object-guess-form");if(gf)gf.onsubmit=e=>{e.preventDefault();const guess=$("#object-guess-input").value.trim();if(guess){send({type:"objectAction",action:"guess",guess});$("#object-guess-input").value=""}};
+}
+function setupSpellingBee(){baseStage("Listen to the voice narrator say the word, use it in a sentence, and repeat it. Type what you hear; replay the narrator whenever you need.");S.spellingState=null;S.spellingPrivate=null;S.spellingSubmitted=false;S.narratedRound=null;$("#game-ui").innerHTML='<div class="spelling-panel" id="spelling-panel"><div class="eyebrow">🐝 THE ROOM SPELLING BEE</div><div class="prompt">Spelling Bee</div><p class="muted">Preparing the narrator…</p></div>';send({type:"spellingAction",action:"sync"})}
+function speakBeeWord(){
+ const p=S.spellingPrivate;if(!p||!p.word)return;if(!("speechSynthesis"in window)||typeof SpeechSynthesisUtterance==="undefined"){toast("Voice narration is not supported in this browser.");return}
+ const synth=window.speechSynthesis;synth.cancel();const voice=synth.getVoices().find(v=>/^en/i.test(v.lang))||null;
+ ["Your spelling word is: "+p.word+".","In a sentence: "+(p.sentence||"Listen carefully."),"Again, the word is: "+p.word+"."].forEach((line,i)=>{const u=new SpeechSynthesisUtterance(line);u.lang="en-US";u.rate=i===1?.93:.84;u.pitch=1.02;u.volume=1;if(voice)u.voice=voice;synth.speak(u)});
+}
+function speakBeeInstructions(){if(!("speechSynthesis"in window)||typeof SpeechSynthesisUtterance==="undefined"){toast("Voice narration is not supported in this browser.");return}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance("Welcome to Spelling Bee. Listen to the narrator say a word, hear it in a sentence, then spell the word in the box. You can replay the narrator whenever you need. Correct spellings earn one point.");u.lang="en-US";u.rate=.92;window.speechSynthesis.speak(u)}
+function renderSpellingBee(){
+ const ui=$("#spelling-panel");if(!ui)return;const st=S.spellingState,p=S.spellingPrivate;if(!st){ui.innerHTML='<div class="prompt">🐝 Spelling Bee</div><div class="muted">Waiting for the room…</div>';return}
+ const scores=(st.scores||[]).map(x=>'<span class="word-chip">🏅 '+esc(x.name)+' · '+x.score+'</span>').join("");let body="";
+ if(st.phase==="lobby")body='<div class="social-card">The narrator says the word, reads a sentence, then repeats it. Type what you hear. Every correct spelling earns one point.</div><button class="primary" id="spell-start">🐝 Start spelling round</button>';
+ if(st.phase==="active"){
+  body='<div class="social-card"><div class="eyebrow">🔊 LISTEN CAREFULLY</div><div class="secret-word">Your word is ready</div><div class="spelling-sentence">'+esc(p&&p.sentence||"Listen to the narrator for the sentence.")+'</div><p class="muted">'+st.submittedCount+'/'+st.playerCount+' players submitted · '+Math.max(0,Math.ceil((st.deadline-Date.now())/1000))+' sec left</p></div>';
+  body+=S.spellingSubmitted?'<div class="word-chip">✓ Spelling submitted — wait for everyone else</div>':'<form class="social-form" id="spell-form"><input class="social-input" id="spell-input" maxlength="48" autocomplete="off" placeholder="Type the spelling you heard…"><button class="primary">SUBMIT</button></form>';
+  body+='<div class="narrator-bar"><button class="ctrl" id="spell-repeat">🔊 Hear / repeat word</button><button class="ctrl" id="spell-rules">📣 Read instructions</button></div>';
+ }
+ if(st.phase==="ended")body='<div class="social-card"><div class="eyebrow">ANSWER REVEALED</div><div class="secret-word">'+esc(st.answer||"")+'</div><div class="spelling-sentence">'+esc(p&&p.sentence||"")+'</div><p class="muted">The spelling round is complete.</p></div><div class="clue-feed">'+(st.results||[]).map(r=>'<div class="clue-line"><b>'+esc(r.name)+'</b>'+esc(r.spelling||"No answer")+' · '+(r.correct?"✅ Correct":"❌ Not quite")+'</div>').join("")+'</div><button class="primary" id="spell-next">🔁 Next word</button>';
+ ui.innerHTML='<div class="eyebrow">🐝 THE ROOM SPELLING BEE</div><div class="prompt">Spelling Bee</div>'+body+'<div class="spelling-score">'+scores+'</div>';
+ const start=$("#spell-start");if(start)start.onclick=()=>send({type:"spellingAction",action:"start"});
+ const next=$("#spell-next");if(next)next.onclick=()=>send({type:"spellingAction",action:"start"});
+ const repeat=$("#spell-repeat");if(repeat)repeat.onclick=speakBeeWord;
+ const rules=$("#spell-rules");if(rules)rules.onclick=speakBeeInstructions;
+ const form=$("#spell-form");if(form)form.onsubmit=e=>{e.preventDefault();const spelling=$("#spell-input").value.trim();if(spelling){send({type:"spellingAction",action:"submit",spelling});S.spellingSubmitted=true;renderSpellingBee()}};
+}
+
+function startScoreboard(){renderPlayers()}
+})();
+</script>
+</body>
+</html>
