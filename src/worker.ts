@@ -437,8 +437,8 @@ return {websocket:app.websocket,room(code){return getRoom(code)}};
 }
 
 export class GameRoom extends DurableObject {
-  engine: ReturnType<typeof createRoomEngine>;
-  constructor(ctx: DurableObjectState, env: Env) {
+  engine: any;
+  constructor(ctx: any, env: any) {
     super(ctx, env);
     this.engine = createRoomEngine();
   }
