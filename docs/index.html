@@ -640,7 +640,7 @@ overlay.addEventListener("click",e=>{if(e.target===overlay)closeGame()});
 window.addEventListener("keydown",e=>{if(e.key==="Escape")closeGame();keys[e.key.toLowerCase()]=true;if(activeGame&&["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault()});
 window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false});
 
-let sbClient=null,roomChannel=null,myPrivateChannel=null,hostChannels=new Map(),roomEngine=null,isRoomHost=false,roomMembers=new Map(),socket=null;
+let sbClient=null,roomChannel=null,myPrivateChannel=null,hostChannels=new Map(),roomEngine=null,isRoomHost=false,roomMembers=new Map();
 const supaConfig=window.PARTY_ARCADE_SUPABASE||{};
 function setRoomStatus(text){const el=$("#connection-label");if(el)el.textContent=text}
 function flattenPresence(){const state=roomChannel?roomChannel.presenceState():{};return Object.values(state).flat().filter(p=>p&&p.id)}
