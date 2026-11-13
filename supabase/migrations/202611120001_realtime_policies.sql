@@ -1,13 +1,25 @@
--- Party Arcade: authorize signed-in (including anonymous-auth) sessions for private Realtime channels.
--- Enable Anonymous Sign-ins in Supabase Auth before using the site.
-create policy "party_arcade_realtime_receive"
+-- Party Arcade private Realtime room channels.
+-- Anonymous users sign in and receive the authenticated Postgres role.
+create policy "party_arcade_realtime_read"
 on realtime.messages
 for select
 to authenticated
-using (true);
+using (
+  realtime.messages.extension in ('broadcast', 'presence')
+  and (
+    realtime.topic() like 'party-room:%'
+    or realtime.topic() like 'party-player:%'
+  )
+);
 
-create policy "party_arcade_realtime_send"
+create policy "party_arcade_realtime_write"
 on realtime.messages
 for insert
 to authenticated
-with check (true);
+with check (
+  realtime.messages.extension in ('broadcast', 'presence')
+  and (
+    realtime.topic() like 'party-room:%'
+    or realtime.topic() like 'party-player:%'
+  )
+);
