@@ -129,7 +129,7 @@ h1{font-size:clamp(42px,7vw,76px);line-height:.96;letter-spacing:-.07em;margin:1
   <header class="top">
     <div class="brand"><div class="logo">🎮</div><div>PARTY ARCADE<small>the hangout playground</small></div></div>
     <nav class="nav"><button id="nav-games">🎲 Games</button><button id="nav-room">👥 Your room</button><button id="nav-how">✨ How to play</button></nav>
-    <div class="profile"><i class="online-dot"></i><span id="top-player">Player</span></div>
+    <div class="profile"><i class="online-dot"></i><span id="top-player">Player</span><button class="ghost" id="edit-name" type="button" style="padding:7px 10px">✏️ Edit name</button></div>
   </header>
 
   <section class="hero">
@@ -604,6 +604,18 @@ const websocket={
       const room = getRoom(ws.data.room);
       const player = room.players.get(ws.data.id);
       if (!player) return;
+      if (msg.type === "rename") {
+        const nextName=String(msg.name||"").trim().replace(/\\s+/g," ").slice(0,20);
+        if(!nextName)return;
+        player.name=nextName;
+        if(room.objectGame?.names)room.objectGame.names.set(player.id,nextName);
+        if(room.spellingGame?.names)room.spellingGame.names.set(player.id,nextName);
+        if(room.tttGame)publishTtt(room);
+        serverRef.publish(ws.data.room,JSON.stringify({type:"players",players:Array.from(room.players.values())}));
+        if(room.spellingGame)publishSpellingGame(room);
+        if(room.objectGame)publishObjectGame(room);
+        return;
+      }
       if (msg.type === "chat") {
         const text = String(msg.text || "").slice(0, 180).trim();
         if (!text) return;
@@ -997,6 +1009,18 @@ function handleMessage(m){
  if(m.type==="playerUpdate"){players=m.players||players;renderPlayers();return}
  if(m.type==="gameEvent"){if(m.player&&m.player.id===serverPlayerId)return;handleGameEvent(m.gameId,m.event,m.player);return}
 }
+function changePlayerName(){
+ const proposed=window.prompt("Choose your player name (up to 20 characters):",myName);
+ if(proposed===null)return;
+ const clean=proposed.trim().replace(/\\s+/g," ").slice(0,20);
+ if(!clean){toast("Please enter a name.");return}
+ myName=clean;localStorage.setItem("pa_name",myName);$("#top-player").textContent=myName;
+ const member={id:myId,name:myName,color:myColor,joinedAt:Date.now()};
+ if(roomChannel)roomChannel.track(member);
+ send({type:"rename",name:myName});
+ toast("Your player name is now "+myName);
+}
+$("#edit-name").addEventListener("click",changePlayerName);
 function renderPlayers(){
  const list=players.slice().sort((a,b)=>a.id===serverPlayerId?-1:b.id===serverPlayerId?1:a.name.localeCompare(b.name));
  $("#room-label").textContent=(room==="PUBLIC"?"Public lobby":"Room "+room)+" · "+players.length+"/16";
